@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Indicadores - Secretaria de Saude de Araguari-MG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #1a7a4a;
+  --primary-dark: #145c38;
+  --primary-light: #2ecc71;
+  --secondary: #2ecc71;
+  --bg: #f0f4f8;
+  --card-bg: #ffffff;
+  --text: #2d3748;
+  --text-light: #718096;
+  --border: #e2e8f0;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-hover: 0 8px 30px rgba(0,0,0,0.15);
+  --sidebar-width: 260px;
+  --header-height: 70px;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+a { text-decoration: none; color: inherit; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* HEADER */
+.header {
+  position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; z-index: 1000; box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo-circle {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); border: 2px solid rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; color: white;
+}
+.header-title { color: white; }
+.header-title h1 { font-size: 15px; font-weight: 700; line-height: 1.2; }
+.header-title p { font-size: 11px; opacity: 0.85; font-weight: 400; }
+.header-right { display: flex; align-items: center; gap: 20px; }
+.datetime-box {
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 10px; padding: 8px 16px; color: white; text-align: right;
+}
+.datetime-box .date { font-size: 11px; opacity: 0.85; }
+.datetime-box .time { font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+.status-badge {
+  background: rgba(46,204,113,0.3); border: 1px solid rgba(46,204,113,0.6);
+  border-radius: 20px; padding: 6px 14px; color: white; font-size: 12px;
+  display: flex; align-items: center; gap: 6px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.3)} }
+
+/* SIDEBAR */
+.sidebar {
+  position: fixed; top: var(--header-height); left: 0; bottom: 0;
+  width: var(--sidebar-width); background: white;
+  border-right: 1px solid var(--border); overflow-y: auto;
+  z-index: 900; transition: transform 0.3s ease;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+}
+.sidebar-section { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.sidebar-section-title {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--text-light); padding: 0 20px 8px;
+}
+.sidebar-link {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; font-size: 13px; font-weight: 500;
+  color: var(--text-light); transition: all 0.2s; cursor: pointer;
+  border-left: 3px solid transparent;
+}
+.sidebar-link:hover { background: #f7fafc; color: var(--primary); border-left-color: var(--primary-light); }
+.sidebar-link.active { background: #f0faf5; color: var(--primary); border-left-color: var(--primary); font-weight: 600; }
+.sidebar-link i { width: 18px; text-align: center; font-size: 14px; }
+.sidebar-kpi { padding: 16px 20px; }
+.sidebar-kpi-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.sidebar-kpi-label { font-size: 11px; color: var(--text-light); }
+.sidebar-kpi-value { font-size: 13px; font-weight: 700; color: var(--primary); }
+
+/* MAIN CONTENT */
+.main { margin-left: var(--sidebar-width); margin-top: var(--header-height); padding: 28px; min-height: calc(100vh - var(--header-height)); }
+
+/* KPI CARDS */
+.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 28px; }
+.kpi-card {
+  background: var(--card-bg); border-radius: 16px; padding: 22px 24px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 18px; transition: all 0.3s;
+  position: relative; overflow: hidden;
+}
+.kpi-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+}
+.kpi-card.green::before { background: linear-gradient(90deg, #1a7a4a, #2ecc71); }
+.kpi-card.blue::before { background: linear-gradient(90deg, #2980b9, #3498db); }
+.kpi-card.orange::before { background: linear-gradient(90deg, #e67e22, #f39c12); }
+.kpi-card.purple::before { background: linear-gradient(90deg, #8e44ad, #9b59b6); }
+.kpi-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.kpi-icon {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+}
+.kpi-card.green .kpi-icon { background: #f0faf5; color: var(--primary); }
+.kpi-card.blue .kpi-icon { background: #ebf5fb; color: #2980b9; }
+.kpi-card.orange .kpi-icon { background: #fef9e7; color: #e67e22; }
+.kpi-card.purple .kpi-icon { background: #f5eef8; color: #8e44ad; }
+.kpi-info { flex: 1; }
+.kpi-value { font-size: 28px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.kpi-card.green .kpi-value { color: var(--primary); }
+.kpi-card.blue .kpi-value { color: #2980b9; }
+.kpi-card.orange .kpi-value { color: #e67e22; }
+.kpi-card.purple .kpi-value { color: #8e44ad; }
+.kpi-label { font-size: 12px; color: var(--text-light); font-weight: 500; line-height: 1.3; }
+.kpi-trend { font-size: 11px; margin-top: 6px; font-weight: 600; }
+.kpi-trend.up { color: #27ae60; }
+.kpi-trend.down { color: #e74c3c; }
+
+/* MODULE CARDS */
+.section-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.section-title::after { content: ''; flex: 1; height: 2px; background: var(--border); border-radius: 1px; }
+.modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 36px; }
+.module-card {
+  background: var(--card-bg); border-radius: 16px; padding: 28px 24px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  cursor: pointer; transition: all 0.3s; text-align: center;
+  position: relative; overflow: hidden;
+}
+.module-card::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 4px;
+}
+.module-card.mod-green::after { background: linear-gradient(90deg, #1a7a4a, #2ecc71); }
+.module-card.mod-blue::after { background: linear-gradient(90deg, #2980b9, #3498db); }
+.module-card.mod-orange::after { background: linear-gradient(90deg, #e67e22, #f39c12); }
+.module-card.mod-purple::after { background: linear-gradient(90deg, #8e44ad, #9b59b6); }
+.module-card.mod-cyan::after { background: linear-gradient(90deg, #16a085, #1abc9c); }
+.module-card.mod-pink::after { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+.module-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); }
+.module-emoji { font-size: 42px; margin-bottom: 12px; display: block; }
+.module-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.module-desc { font-size: 12px; color: var(--text-light); }
+.module-count { font-size: 22px; font-weight: 800; margin-top: 10px; }
+.module-card.mod-green .module-count { color: var(--primary); }
+.module-card.mod-blue .module-count { color: #2980b9; }
+.module-card.mod-orange .module-count { color: #e67e22; }
+.module-card.mod-purple .module-count { color: #8e44ad; }
+.module-card.mod-cyan .module-count { color: #16a085; }
+.module-card.mod-pink .module-count { color: #c0392b; }
+
+/* DETAIL SECTIONS */
+.detail-section { margin-bottom: 48px; scroll-margin-top: calc(var(--header-height) + 20px); }
+.detail-section-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+  padding-bottom: 16px; border-bottom: 2px solid var(--border);
+}
+.detail-section-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.detail-section-icon.green { background: #f0faf5; color: var(--primary); }
+.detail-section-icon.blue { background: #ebf5fb; color: #2980b9; }
+.detail-section-icon.orange { background: #fef9e7; color: #e67e22; }
+.detail-section-icon.purple { background: #f5eef8; color: #8e44ad; }
+.detail-section-icon.cyan { background: #e8f8f5; color: #16a085; }
+.detail-section-icon.pink { background: #fdedec; color: #c0392b; }
+.detail-section-title { font-size: 20px; font-weight: 700; color: var(--text); }
+.detail-section-subtitle { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+
+.cards-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+.cards-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
+.card {
+  background: var(--card-bg); border-radius: 14px; padding: 22px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+}
+.card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.card-title i { color: var(--primary); }
+
+/* CHARTS */
+.chart-container { position: relative; height: 220px; }
+.chart-container-lg { position: relative; height: 280px; }
+
+/* TABLES */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  background: #f7fafc; padding: 10px 14px; text-align: left;
+  font-weight: 600; color: var(--text-light); font-size: 11px;
+  text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border);
+}
+.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: #f7fafc; }
+.table-wrapper { overflow-x: auto; }
+
+/* SEMAFORO */
+.semaforo { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+.semaforo.verde { background: #f0faf5; color: #1a7a4a; }
+.semaforo.amarelo { background: #fef9e7; color: #d68910; }
+.semaforo.vermelho { background: #fdedec; color: #c0392b; }
+.semaforo-dot { width: 8px; height: 8px; border-radius: 50%; }
+.semaforo.verde .semaforo-dot { background: #2ecc71; }
+.semaforo.amarelo .semaforo-dot { background: #f1c40f; }
+.semaforo.vermelho .semaforo-dot { background: #e74c3c; }
+
+/* PROGRESS BARS */
+.progress-item { margin-bottom: 16px; }
+.progress-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.progress-label { font-size: 13px; font-weight: 500; color: var(--text); }
+.progress-values { font-size: 12px; color: var(--text-light); }
+.progress-bar-bg { height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+.progress-bar-fill.green { background: linear-gradient(90deg, #1a7a4a, #2ecc71); }
+.progress-bar-fill.blue { background: linear-gradient(90deg, #2980b9, #3498db); }
+.progress-bar-fill.orange { background: linear-gradient(90deg, #e67e22, #f39c12); }
+.progress-bar-fill.purple { background: linear-gradient(90deg, #8e44ad, #9b59b6); }
+.progress-bar-fill.cyan { background: linear-gradient(90deg, #16a085, #1abc9c); }
+.progress-bar-fill.red { background: linear-gradient(90deg, #c0392b, #e74c3c); }
+
+/* STAT MINI */
+.stat-mini { text-align: center; padding: 16px; background: #f7fafc; border-radius: 10px; }
+.stat-mini-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+.stat-mini-label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+.stats-mini-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+
+/* BADGE */
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #f0faf5; color: #1a7a4a; }
+.badge-blue { background: #ebf5fb; color: #2980b9; }
+.badge-orange { background: #fef9e7; color: #e67e22; }
+.badge-red { background: #fdedec; color: #c0392b; }
+.badge-gray { background: #f7fafc; color: #718096; }
+
+/* FOOTER */
+.footer {
+  margin-left: var(--sidebar-width); background: var(--primary-dark);
+  color: rgba(255,255,255,0.8); text-align: center; padding: 20px;
+  font-size: 13px;
+}
+.footer strong { color: white; }
+
+/* RESPONSIVE */
+@media (max-width: 1200px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .modules-grid { grid-template-columns: repeat(2, 1fr); }
+  .cards-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  :root { --sidebar-width: 0px; }
+  .sidebar { transform: translateX(-260px); }
+  .sidebar.open { transform: translateX(0); width: 260px; }
+  .main { margin-left: 0; padding: 16px; }
+  .footer { margin-left: 0; }
+  .kpi-row { grid-template-columns: 1fr 1fr; }
+  .modules-grid { grid-template-columns: 1fr 1fr; }
+  .cards-row { grid-template-columns: 1fr; }
+  .cards-row-2 { grid-template-columns: 1fr; }
+  .header-title h1 { font-size: 12px; }
+  .status-badge span { display: none; }
+}
+.mobile-menu-btn {
+  display: none; background: rgba(255,255,255,0.2); border: none;
+  color: white; font-size: 20px; padding: 8px 12px; border-radius: 8px; cursor: pointer;
+}
+@media (max-width: 768px) { .mobile-menu-btn { display: block; } }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 850; }
+.overlay.show { display: block; }
+
+/* VIGILANCIA EPIDEMIOLOGICA - MAPA E FILTROS */
+.ve-filters {
+  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+  margin-bottom: 20px; padding: 16px 20px;
+  background: #f7fafc; border-radius: 12px; border: 1px solid var(--border);
+}
+.ve-filter-group { display: flex; flex-direction: column; gap: 4px; }
+.ve-filter-label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+.ve-filter-select, .ve-filter-btn {
+  padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+  font-size: 13px; font-family: 'Inter', sans-serif; background: white;
+  cursor: pointer; transition: all 0.2s;
+}
+.ve-filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,122,74,0.1); }
+.ve-filter-btn { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
+.ve-filter-btn:hover { background: var(--primary-dark); }
+.ve-filter-btn.secondary { background: white; color: var(--text); border-color: var(--border); }
+.ve-filter-btn.secondary.active { background: #f0faf5; color: var(--primary); border-color: var(--primary); }
+
+.ve-map-container {
+  position: relative; height: 520px; border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.ve-map-legend {
+  position: absolute; bottom: 16px; left: 16px; z-index: 1000;
+  background: white; border-radius: 10px; padding: 14px 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15); font-size: 12px;
+  max-width: 220px;
+}
+.ve-legend-title { font-weight: 700; margin-bottom: 8px; color: var(--text); }
+.ve-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.ve-legend-color { width: 18px; height: 12px; border-radius: 3px; }
+.ve-legend-label { font-size: 11px; color: var(--text-light); }
+
+.ve-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+.ve-kpi-item {
+  background: white; border-radius: 12px; padding: 16px; text-align: center;
+  border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.ve-kpi-item .value { font-size: 26px; font-weight: 800; line-height: 1.1; }
+.ve-kpi-item .label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+.ve-kpi-item.dengue .value { color: #e74c3c; }
+.ve-kpi-item.chik .value { color: #8e44ad; }
+.ve-kpi-item.total .value { color: #e67e22; }
+.ve-kpi-item.hosp .value { color: #2980b9; }
+.ve-kpi-item.obito .value { color: #c0392b; }
+
+.ve-ranking-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ve-ranking-table th { background: #f7fafc; padding: 8px 10px; text-align: left; font-weight: 600; color: var(--text-light); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+.ve-ranking-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.ve-ranking-table tr:hover td { background: #f7fafc; }
+.ve-ranking-table .bar-cell { width: 120px; }
+.ve-inline-bar { height: 8px; border-radius: 4px; transition: width 0.5s; }
+
+@media (max-width: 1200px) { .ve-kpi-row { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px) { .ve-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i></button>
+    <div class="logo-circle"><i class="fas fa-heartbeat"></i></div>
+    <div class="header-title">
+      <h1>Painel de Indicadores</h1>
+      <p>Secretaria de Saude de Araguari - MG</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="datetime-box">
+      <div class="date" id="current-date">--/--/----</div>
+      <div class="time" id="current-time">--:--:--</div>
+    </div>
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>Ao Vivo</span>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Navegacao</div>
+    <a class="sidebar-link active" href="#inicio" onclick="setActive(this)">
+      <i class="fas fa-home"></i> Inicio
+    </a>
+    <a class="sidebar-link" href="#atencao-primaria" onclick="setActive(this)">
+      <i class="fas fa-hospital"></i> Atencao Primaria
+    </a>
+    <a class="sidebar-link" href="#vigilancia-sanitaria" onclick="setActive(this)">
+      <i class="fas fa-search"></i> Vigilancia Sanitaria
+    </a>
+    <a class="sidebar-link" href="#vigilancia-epidemiologica" onclick="setActive(this)">
+      <i class="fas fa-chart-bar"></i> Vig. Epidemiologica
+    </a>
+    <a class="sidebar-link" href="#vacinacao" onclick="setActive(this)">
+      <i class="fas fa-syringe"></i> Vacinacao
+    </a>
+    <a class="sidebar-link" href="#odontologia" onclick="setActive(this)">
+      <i class="fas fa-tooth"></i> Odontologia
+    </a>
+    <a class="sidebar-link" href="#saude-mental" onclick="setActive(this)">
+      <i class="fas fa-brain"></i> Saude Mental
+    </a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Resumo do Mes</div>
+    <div class="sidebar-kpi">
+      <div class="sidebar-kpi-item">
+        <span class="sidebar-kpi-label">Atendimentos</span>
+        <span class="sidebar-kpi-value">12.847</span>
+      </div>
+      <div class="sidebar-kpi-item">
+        <span class="sidebar-kpi-label">Cobertura Vacinal</span>
+        <span class="sidebar-kpi-value">87%</span>
+      </div>
+      <div class="sidebar-kpi-item">
+        <span class="sidebar-kpi-label">Notificacoes Arboviroses</span>
+        <span class="sidebar-kpi-value">8.018</span>
+      </div>
+      <div class="sidebar-kpi-item">
+        <span class="sidebar-kpi-label">Vistorias</span>
+        <span class="sidebar-kpi-value">156</span>
+      </div>
+      <div class="sidebar-kpi-item">
+        <span class="sidebar-kpi-label">UBS Ativas</span>
+        <span class="sidebar-kpi-value">12</span>
+      </div>
+      <div class="sidebar-kpi-item">
+        <span class="sidebar-kpi-label">Equipes ESF</span>
+        <span class="sidebar-kpi-value">18</span>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Acesso Rapido</div>
+    <a class="sidebar-link" href="#" onclick="return false;">
+      <i class="fas fa-file-alt"></i> Relatorios
+    </a>
+    <a class="sidebar-link" href="#" onclick="return false;">
+      <i class="fas fa-download"></i> Exportar Dados
+    </a>
+    <a class="sidebar-link" href="#" onclick="return false;">
+      <i class="fas fa-cog"></i> Configuracoes
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main" id="inicio">
+
+<!-- KPI CARDS -->
+<div class="kpi-row">
+  <div class="kpi-card green">
+    <div class="kpi-icon"><i class="fas fa-stethoscope"></i></div>
+    <div class="kpi-info">
+      <div class="kpi-value">12.847</div>
+      <div class="kpi-label">Total Atendimentos no Mes</div>
+      <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +8,3% vs mes anterior</div>
+    </div>
+  </div>
+  <div class="kpi-card blue">
+    <div class="kpi-icon"><i class="fas fa-shield-virus"></i></div>
+    <div class="kpi-info">
+      <div class="kpi-value">87%</div>
+      <div class="kpi-label">Cobertura Vacinal</div>
+      <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +2,1% vs meta</div>
+    </div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
+    <div class="kpi-info">
+      <div class="kpi-value">8.018</div>
+      <div class="kpi-label">Notificacoes Arboviroses</div>
+      <div class="kpi-trend down"><i class="fas fa-arrow-up"></i> Epidemia Dengue + Chik 2026</div>
+    </div>
+  </div>
+  <div class="kpi-card purple">
+    <div class="kpi-icon"><i class="fas fa-clipboard-check"></i></div>
+    <div class="kpi-info">
+      <div class="kpi-value">156</div>
+      <div class="kpi-label">Vistorias Sanitarias</div>
+      <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> +15% vs meta</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODULE CARDS -->
+<div class="section-title"><i class="fas fa-th-large" style="color:var(--primary)"></i> Modulos do Sistema</div>
+<div class="modules-grid">
+  <div class="module-card mod-green" onclick="document.getElementById('atencao-primaria').scrollIntoView({behavior:'smooth'})">
+    <span class="module-emoji">&#127973;</span>
+    <div class="module-name">Atencao Primaria</div>
+    <div class="module-desc">UBS, ESF, NASF e Consultas</div>
+    <div class="module-count">8.234</div>
+    <div style="font-size:11px;color:#718096;margin-top:2px">atendimentos/mes</div>
+  </div>
+  <div class="module-card mod-blue" onclick="document.getElementById('vigilancia-sanitaria').scrollIntoView({behavior:'smooth'})">
+    <span class="module-emoji">&#128269;</span>
+    <div class="module-name">Vigilancia Sanitaria</div>
+    <div class="module-desc">Vistorias, Licencas e Fiscalizacao</div>
+    <div class="module-count">156</div>
+    <div style="font-size:11px;color:#718096;margin-top:2px">vistorias/mes</div>
+  </div>
+  <div class="module-card mod-orange" onclick="document.getElementById('vigilancia-epidemiologica').scrollIntoView({behavior:'smooth'})">
+    <span class="module-emoji">&#128202;</span>
+    <div class="module-name">Vigilancia Epidemiologica</div>
+    <div class="module-desc">Arboviroses - Dengue e Chikungunya</div>
+    <div class="module-count">8.018</div>
+    <div style="font-size:11px;color:#718096;margin-top:2px">notificacoes 2026</div>
+  </div>
+  <div class="module-card mod-purple" onclick="document.getElementById('vacinacao').scrollIntoView({behavior:'smooth'})">
+    <span class="module-emoji">&#128137;</span>
+    <div class="module-name">Vacinacao</div>
+    <div class="module-desc">Imunizacao e Cobertura Vacinal</div>
+    <div class="module-count">3.421</div>
+    <div style="font-size:11px;color:#718096;margin-top:2px">doses aplicadas/mes</div>
+  </div>
+  <div class="module-card mod-cyan" onclick="document.getElementById('odontologia').scrollIntoView({behavior:'smooth'})">
+    <span class="module-emoji">&#129463;</span>
+    <div class="module-name">Odontologia</div>
+    <div class="module-desc">Saude Bucal e Procedimentos</div>
+    <div class="module-count">1.876</div>
+    <div style="font-size:11px;color:#718096;margin-top:2px">procedimentos/mes</div>
+  </div>
+  <div class="module-card mod-pink" onclick="document.getElementById('saude-mental').scrollIntoView({behavior:'smooth'})">
+    <span class="module-emoji">&#129504;</span>
+    <div class="module-name">Saude Mental</div>
+    <div class="module-desc">CAPS, RAPS e Acompanhamento</div>
+    <div class="module-count">512</div>
+    <div style="font-size:11px;color:#718096;margin-top:2px">usuarios ativos</div>
+  </div>
+</div>
+
+<!-- ===== ATENCAO PRIMARIA ===== -->
+<div class="detail-section" id="atencao-primaria">
+  <div class="detail-section-header">
+    <div class="detail-section-icon green"><i class="fas fa-hospital"></i></div>
+    <div>
+      <div class="detail-section-title">Atencao Primaria a Saude</div>
+      <div class="detail-section-subtitle">UBS, Estrategia Saude da Familia, NASF e Consultas Medicas</div>
+    </div>
+  </div>
+
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-line"></i> Atendimentos por Mes (2024)</div>
+      <div class="chart-container"><canvas id="chartAP1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-pie"></i> Atendimentos por Tipo</div>
+      <div class="chart-container"><canvas id="chartAP2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas x Realizado</div>
+      <div style="margin-top:8px">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Consultas Medicas</span>
+            <span class="progress-values">4.210 / 4.500</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:93.6%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Consultas Enfermagem</span>
+            <span class="progress-values">2.890 / 3.000</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:96.3%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Visitas Domiciliares</span>
+            <span class="progress-values">1.134 / 1.500</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:75.6%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Grupos Educativos</span>
+            <span class="progress-values">48 / 60</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:80%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Cadastros SISAB</span>
+            <span class="progress-values">98.400 / 100.000</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:98.4%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Producao por UBS - Junho 2025</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Unidade</th>
+              <th>Consultas</th>
+              <th>Visitas</th>
+              <th>Procedimentos</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>UBS Centro</td><td>892</td><td>124</td><td>1.340</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>UBS Bom Jesus</td><td>743</td><td>98</td><td>1.102</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>UBS Ipiranga</td><td>621</td><td>87</td><td>934</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>UBS Independencia</td><td>534</td><td>76</td><td>801</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>UBS Tabajaras</td><td>489</td><td>65</td><td>734</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>UBS Novo Mundo</td><td>412</td><td>58</td><td>618</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>UBS Setor Sul</td><td>387</td><td>52</td><td>581</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>UBS Zona Rural</td><td>298</td><td>143</td><td>447</td><td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Critico</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-traffic-light"></i> Indicadores PMAQ / PREVINE</div>
+      <div style="margin-top:8px">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Pre-natal (1 consulta 1 trim.)</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>92%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:92%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Hipertensao - consultas em dia</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>78%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:78%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Diabetes - HbA1c solicitado</span>
+            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>64%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:64%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Citopatologico (mulheres 25-64)</span>
+            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>58%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:58%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Criancas com vacinas em dia</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>89%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:89%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Saude do Idoso - avaliacao</span>
+            <span class="progress-values"><span class="semaforo vermelho"><span class="semaforo-dot"></span>41%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill red" style="width:41%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VIGILANCIA SANITARIA ===== -->
+<div class="detail-section" id="vigilancia-sanitaria">
+  <div class="detail-section-header">
+    <div class="detail-section-icon blue"><i class="fas fa-search"></i></div>
+    <div>
+      <div class="detail-section-title">Vigilancia Sanitaria</div>
+      <div class="detail-section-subtitle">Vistorias, Licencas Sanitarias, Fiscalizacao e Auto de Infracao</div>
+    </div>
+  </div>
+
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Vistorias por Categoria</div>
+      <div class="chart-container"><canvas id="chartVS1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-line"></i> Vistorias Mensais 2024</div>
+      <div class="chart-container"><canvas id="chartVS2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas de Fiscalizacao</div>
+      <div style="margin-top:8px">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Estabelecimentos Alimenticios</span>
+            <span class="progress-values">68 / 80</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:85%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Farmacias e Drogarias</span>
+            <span class="progress-values">24 / 24</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:100%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Servicos de Saude</span>
+            <span class="progress-values">31 / 40</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:77.5%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Cosmeticos e Estetica</span>
+            <span class="progress-values">18 / 20</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:90%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Licencas Emitidas</span>
+            <span class="progress-values">142 / 150</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:94.7%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Ultimas Vistorias Realizadas</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Estabelecimento</th><th>Tipo</th><th>Data</th><th>Resultado</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Restaurante Sabor Mineiro</td><td>Alimenticio</td><td>10/06/2025</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Aprovado</span></td></tr>
+            <tr><td>Farmacia Popular Centro</td><td>Farmacia</td><td>09/06/2025</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Aprovado</span></td></tr>
+            <tr><td>Clinica Odonto Vida</td><td>Saude</td><td>09/06/2025</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Pendencia</span></td></tr>
+            <tr><td>Padaria Pao Quente</td><td>Alimenticio</td><td>08/06/2025</td><td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Autuado</span></td></tr>
+            <tr><td>Salao Beleza Total</td><td>Estetica</td><td>07/06/2025</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Aprovado</span></td></tr>
+            <tr><td>Laboratorio Analises</td><td>Saude</td><td>06/06/2025</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Aprovado</span></td></tr>
+            <tr><td>Supermercado Bom Preco</td><td>Alimenticio</td><td>05/06/2025</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Pendencia</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-exclamation-circle"></i> Indicadores de Conformidade</div>
+      <div class="stats-mini-row">
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#2980b9">156</div>
+          <div class="stat-mini-label">Total Vistorias</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#27ae60">128</div>
+          <div class="stat-mini-label">Aprovadas</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#e74c3c">8</div>
+          <div class="stat-mini-label">Autuacoes</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Taxa de Conformidade</span>
+          <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>82%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:82%"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Licencas em Dia</span>
+          <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>94%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:94%"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Pendencias Resolvidas</span>
+          <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>67%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:67%"></div></div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:8px">TIPOS DE IRREGULARIDADE</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <span class="badge badge-orange">Higiene (12)</span>
+          <span class="badge badge-red">Documentacao (8)</span>
+          <span class="badge badge-orange">Estrutura (6)</span>
+          <span class="badge badge-gray">Outros (4)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VIGILANCIA EPIDEMIOLOGICA ===== -->
+<div class="detail-section" id="vigilancia-epidemiologica">
+  <div class="detail-section-header">
+    <div class="detail-section-icon orange"><i class="fas fa-virus"></i></div>
+    <div>
+      <div class="detail-section-title">Vigilancia Epidemiologica - Arboviroses 2026</div>
+      <div class="detail-section-subtitle">Dengue (A90) e Chikungunya (A92.0) - Dados SINAN | Araguari-MG</div>
+    </div>
+  </div>
+
+  <!-- KPIs Gerais -->
+  <div class="ve-kpi-row" id="ve-kpi-row">
+    <div class="ve-kpi-item total">
+      <div class="value" id="kpi-total">8.018</div>
+      <div class="label">Total Notificacoes</div>
+    </div>
+    <div class="ve-kpi-item dengue">
+      <div class="value" id="kpi-dengue">3.501</div>
+      <div class="label">Dengue (A90)</div>
+    </div>
+    <div class="ve-kpi-item chik">
+      <div class="value" id="kpi-chik">4.517</div>
+      <div class="label">Chikungunya (A92.0)</div>
+    </div>
+    <div class="ve-kpi-item hosp">
+      <div class="value" id="kpi-hosp">150</div>
+      <div class="label">Hospitalizacoes</div>
+    </div>
+    <div class="ve-kpi-item obito">
+      <div class="value" id="kpi-obito">1</div>
+      <div class="label">Obitos</div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="ve-filters">
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Periodo</span>
+      <select class="ve-filter-select" id="filtro-mes" onchange="aplicarFiltros()">
+        <option value="todos">Todos os Meses</option>
+        <option value="01">Janeiro/2026</option>
+        <option value="02">Fevereiro/2026</option>
+        <option value="03">Marco/2026</option>
+        <option value="04">Abril/2026</option>
+        <option value="05">Maio/2026</option>
+      </select>
+    </div>
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Agravo</span>
+      <select class="ve-filter-select" id="filtro-agravo" onchange="aplicarFiltros()">
+        <option value="todos">Dengue + Chikungunya</option>
+        <option value="dengue">Somente Dengue</option>
+        <option value="chik">Somente Chikungunya</option>
+      </select>
+    </div>
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Visualizar</span>
+      <select class="ve-filter-select" id="filtro-tipo" onchange="aplicarFiltros()">
+        <option value="notificados">Notificados</option>
+        <option value="confirmados">Confirmados</option>
+      </select>
+    </div>
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Top Bairros</span>
+      <select class="ve-filter-select" id="filtro-top" onchange="aplicarFiltros()">
+        <option value="15">Top 15</option>
+        <option value="25">Top 25</option>
+        <option value="47">Todos (47)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div class="cards-row-2">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="card-title" style="padding:18px 22px 0"><i class="fas fa-map-marked-alt"></i> Mapa de Calor por Bairro - Araguari-MG</div>
+      <div class="ve-map-container" id="map-araguari">
+        <div class="ve-map-legend" id="map-legend">
+          <div class="ve-legend-title">Notificacoes por Bairro</div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fee5d9"></div><span class="ve-legend-label">1 - 50</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fcae91"></div><span class="ve-legend-label">51 - 150</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fb6a4a"></div><span class="ve-legend-label">151 - 300</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#de2d26"></div><span class="ve-legend-label">301 - 450</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#a50f15"></div><span class="ve-legend-label">&gt; 450</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-sort-amount-down"></i> Ranking de Bairros <span id="ranking-subtitle" style="font-weight:400;color:var(--text-light);font-size:11px;margin-left:8px">(Todos os meses - Dengue+Chik)</span></div>
+      <div class="table-wrapper" style="max-height:490px;overflow-y:auto">
+        <table class="ve-ranking-table" id="ranking-table">
+          <thead>
+            <tr><th>#</th><th>Bairro</th><th>Dengue</th><th>Chik</th><th>Total</th><th>Grafico</th></tr>
+          </thead>
+          <tbody id="ranking-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURVA EPIDEMICA -->
+  <div class="cards-row-2" style="margin-top:24px">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-area"></i> Curva Epidemica - Semanas Epidemiologicas 2026</div>
+      <div class="chart-container-lg"><canvas id="chartVE1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Comparativo Mensal - Dengue vs Chikungunya</div>
+      <div class="chart-container-lg"><canvas id="chartVE2"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABELA RESUMO + ALERTAS -->
+  <div class="cards-row-2" style="margin-top:24px">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Resumo Geral - Arboviroses 2026</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Agravo</th><th>Notificados</th><th>Confirmados</th><th>Descartados</th><th>Pendentes</th><th>Intern.</th><th>Obitos</th><th>Situacao</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong style="color:#e74c3c">Dengue (A90)</strong></td>
+              <td>3.501</td><td>548</td><td>1.447</td><td>1.185</td><td>92</td><td>0</td>
+              <td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Epidemia</span></td>
+            </tr>
+            <tr>
+              <td><strong style="color:#8e44ad">Chikungunya (A92.0)</strong></td>
+              <td>4.517</td><td>1.365</td><td>509</td><td>2.643</td><td>58</td><td>1</td>
+              <td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Epidemia</span></td>
+            </tr>
+            <tr style="background:#f7fafc;font-weight:700">
+              <td>TOTAL</td><td>8.018</td><td>1.913</td><td>1.956</td><td>3.828</td><td>150</td><td>1</td>
+              <td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Critico</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-exclamation-triangle"></i> Alertas e Situacao Epidemiologica</div>
+      <div style="margin-top:8px">
+        <div style="padding:12px;background:#fdedec;border-radius:10px;border-left:4px solid #e74c3c;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:#c0392b"><i class="fas fa-virus"></i> Co-epidemia Dengue + Chikungunya</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">8.018 notificacoes desde Dez/2025. Pico em Marco/2026 (SE 09-11).</div>
+          <div style="font-size:11px;color:#c0392b;margin-top:4px"><i class="fas fa-map-marker-alt"></i> Bairros criticos: Amorim, Brasilia, Independencia, Centro, Maria Eugenia</div>
+        </div>
+        <div style="padding:12px;background:#fef9e7;border-radius:10px;border-left:4px solid #f39c12;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:#d68910"><i class="fas fa-skull-crossbones"></i> 1 Obito por Chikungunya</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">Paciente 87 anos, Bairro Ouro Verde. Inicio sintomas: 07/03, obito: 16/03/2026.</div>
+        </div>
+        <div style="padding:12px;background:#fef9e7;border-radius:10px;border-left:4px solid #f39c12;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600;color:#d68910"><i class="fas fa-hospital"></i> 150 Hospitalizacoes</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">92 por Dengue + 58 por Chikungunya. Taxa internacao: 1,9%.</div>
+        </div>
+        <div style="padding:12px;background:#ebf5fb;border-radius:10px;border-left:4px solid #2980b9">
+          <div style="font-size:13px;font-weight:600;color:#2980b9"><i class="fas fa-chart-line"></i> Tendencia de Queda</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">Maio/2026 apresenta reducao significativa. Curva em declinio.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VACINACAO ===== -->
+<div class="detail-section" id="vacinacao">
+  <div class="detail-section-header">
+    <div class="detail-section-icon purple"><i class="fas fa-syringe"></i></div>
+    <div>
+      <div class="detail-section-title">Vacinacao e Imunizacao</div>
+      <div class="detail-section-subtitle">Cobertura Vacinal, Doses Aplicadas e Campanhas</div>
+    </div>
+  </div>
+
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-line"></i> Doses Aplicadas por Mes (2024)</div>
+      <div class="chart-container"><canvas id="chartVAC1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Cobertura por Vacina (%)</div>
+      <div class="chart-container"><canvas id="chartVAC2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas de Cobertura Vacinal</div>
+      <div style="margin-top:8px">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Poliomielite (VIP/VOP)</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>95%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:95%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Triplice Viral (SCR)</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>91%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:91%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Pentavalente (DTP+Hib+HB)</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>89%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:89%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Influenza (Idosos &gt;60)</span>
+            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>72%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:72%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">HPV (meninas 9-14 anos)</span>
+            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>68%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:68%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">COVID-19 (dose atualizada)</span>
+            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>61%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:61%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Doses Aplicadas por Vacina - Junho 2025</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Vacina</th><th>Doses</th><th>Meta Mensal</th><th>% Meta</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Influenza</td><td>892</td><td>900</td><td>99,1%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
+            <tr><td>COVID-19</td><td>634</td><td>700</td><td>90,6%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
+            <tr><td>Pentavalente</td><td>287</td><td>300</td><td>95,7%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
+            <tr><td>Triplice Viral</td><td>241</td><td>280</td><td>86,1%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>HPV</td><td>198</td><td>250</td><td>79,2%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>Febre Amarela</td><td>187</td><td>200</td><td>93,5%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
+            <tr><td>Hepatite B</td><td>156</td><td>180</td><td>86,7%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>Meningococica C</td><td>134</td><td>150</td><td>89,3%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
+            <tr><td>Pneumococica 10V</td><td>128</td><td>140</td><td>91,4%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
+            <tr><td>Rotavirus</td><td>98</td><td>120</td><td>81,7%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-calendar-alt"></i> Campanhas e Eventos</div>
+      <div style="margin-top:8px">
+        <div style="padding:14px;background:#f5eef8;border-radius:10px;border-left:4px solid #8e44ad;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700;color:#8e44ad">Campanha Influenza 2025</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">Periodo: Abril - Junho 2025</div>
+          <div style="margin-top:8px">
+            <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:72%"></div></div>
+            <div style="font-size:11px;color:#8e44ad;margin-top:4px">72% da meta atingida (18.432 / 25.600 doses)</div>
+          </div>
+        </div>
+        <div style="padding:14px;background:#f0faf5;border-radius:10px;border-left:4px solid #1a7a4a;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700;color:#1a7a4a">Multivacinacao Criancas</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">Periodo: Agosto 2025 (planejado)</div>
+          <div style="font-size:12px;color:#1a7a4a;margin-top:6px"><i class="fas fa-clock"></i> Em preparacao</div>
+        </div>
+        <div style="padding:14px;background:#ebf5fb;border-radius:10px;border-left:4px solid #2980b9;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700;color:#2980b9">Vacinacao HPV Escolar</div>
+          <div style="font-size:12px;color:#718096;margin-top:4px">Parceria com Secretaria de Educacao</div>
+          <div style="margin-top:8px">
+            <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:68%"></div></div>
+            <div style="font-size:11px;color:#2980b9;margin-top:4px">68% das escolas visitadas</div>
+          </div>
+        </div>
+        <div class="stats-mini-row" style="margin-top:16px">
+          <div class="stat-mini">
+            <div class="stat-mini-value" style="color:#8e44ad">3.421</div>
+            <div class="stat-mini-label">Doses/Mes</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-value" style="color:#27ae60">87%</div>
+            <div class="stat-mini-label">Cobertura</div>
+          </div>
+          <div class="stat-mini">
+            <div class="stat-mini-value" style="color:#2980b9">12</div>
+            <div class="stat-mini-label">Salas Vacina</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ODONTOLOGIA ===== -->
+<div class="detail-section" id="odontologia">
+  <div class="detail-section-header">
+    <div class="detail-section-icon cyan"><i class="fas fa-tooth"></i></div>
+    <div>
+      <div class="detail-section-title">Odontologia - Saude Bucal</div>
+      <div class="detail-section-subtitle">Procedimentos Odontologicos, CEO e Saude Bucal Escolar</div>
+    </div>
+  </div>
+
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Procedimentos por Tipo</div>
+      <div class="chart-container"><canvas id="chartODO1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-line"></i> Producao Mensal 2024</div>
+      <div class="chart-container"><canvas id="chartODO2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas de Saude Bucal</div>
+      <div style="margin-top:8px">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">1a Consulta Odontologica</span>
+            <span class="progress-values">876 / 1.000</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill cyan" style="width:87.6%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Tratamento Concluido</span>
+            <span class="progress-values">412 / 500</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill cyan" style="width:82.4%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Escovacao Supervisionada</span>
+            <span class="progress-values">2.340 / 3.000</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill cyan" style="width:78%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Aplicacao de Fluor</span>
+            <span class="progress-values">1.876 / 2.000</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill cyan" style="width:93.8%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Extracao Dentaria</span>
+            <span class="progress-values">234 / 300</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:78%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Producao por Equipe de Saude Bucal</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Equipe / UBS</th><th>1a Consulta</th><th>Procedimentos</th><th>Concluidos</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>ESB Centro</td><td>124</td><td>387</td><td>68</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>ESB Bom Jesus</td><td>98</td><td>312</td><td>54</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>ESB Ipiranga</td><td>87</td><td>276</td><td>47</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>ESB Independencia</td><td>76</td><td>241</td><td>38</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>ESB Tabajaras</td><td>65</td><td>206</td><td>32</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>CEO Municipal</td><td>187</td><td>456</td><td>98</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-school"></i> Saude Bucal Escolar</div>
+      <div class="stats-mini-row">
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#16a085">28</div>
+          <div class="stat-mini-label">Escolas Atendidas</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#16a085">4.320</div>
+          <div class="stat-mini-label">Alunos Triados</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#e67e22">1.234</div>
+          <div class="stat-mini-label">Encaminhados</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Cobertura Escolar</span>
+          <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>87%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill cyan" style="width:87%"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Alunos sem Carie (CPO-D=0)</span>
+          <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>62%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill cyan" style="width:62%"></div></div>
+      </div>
+      <div style="margin-top:16px;padding:14px;background:#e8f8f5;border-radius:10px">
+        <div style="font-size:13px;font-weight:700;color:#16a085">CEO - Centro de Especialidades</div>
+        <div style="font-size:12px;color:#718096;margin-top:6px">Especialidades: Endodontia, Periodontia, Cirurgia, Protese, Pacientes Especiais</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <span class="badge badge-green">Endodontia: 187</span>
+          <span class="badge badge-green">Periodontia: 134</span>
+          <span class="badge badge-green">Cirurgia: 98</span>
+          <span class="badge badge-green">Protese: 67</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SAUDE MENTAL ===== -->
+<div class="detail-section" id="saude-mental">
+  <div class="detail-section-header">
+    <div class="detail-section-icon pink"><i class="fas fa-brain"></i></div>
+    <div>
+      <div class="detail-section-title">Saude Mental</div>
+      <div class="detail-section-subtitle">CAPS, RAPS, Acompanhamento Psicossocial e Reducao de Danos</div>
+    </div>
+  </div>
+
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-pie"></i> Usuarios por Diagnostico</div>
+      <div class="chart-container"><canvas id="chartSM1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-line"></i> Atendimentos Mensais 2024</div>
+      <div class="chart-container"><canvas id="chartSM2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas CAPS</div>
+      <div style="margin-top:8px">
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Usuarios Ativos CAPS AD</span>
+            <span class="progress-values">187 / 200</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill red" style="width:93.5%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Usuarios Ativos CAPS II</span>
+            <span class="progress-values">234 / 250</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill red" style="width:93.6%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Grupos Terapeuticos/Mes</span>
+            <span class="progress-values">32 / 40</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:80%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Visitas Domiciliares</span>
+            <span class="progress-values">78 / 100</span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:78%"></div></div>
+        </div>
+        <div class="progress-item">
+          <div class="progress-header">
+            <span class="progress-label">Reinternacoes Evitadas</span>
+            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>91%</span></span>
+          </div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:91%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Atendimentos CAPS - Junho 2025</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Servico</th><th>Usuarios</th><th>Atendimentos</th><th>Grupos</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>CAPS II (Adultos)</td><td>234</td><td>1.872</td><td>18</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>CAPS AD (Alcool/Drogas)</td><td>187</td><td>1.496</td><td>12</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+            <tr><td>CAPS Infanto-Juvenil</td><td>91</td><td>728</td><td>8</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>Residencia Terapeutica</td><td>12</td><td>360</td><td>4</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
+            <tr><td>Consultorio na Rua</td><td>48</td><td>192</td><td>2</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-heart"></i> Indicadores de Saude Mental</div>
+      <div class="stats-mini-row">
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#c0392b">512</div>
+          <div class="stat-mini-label">Usuarios Ativos</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#c0392b">4.648</div>
+          <div class="stat-mini-label">Atendimentos/Mes</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-value" style="color:#e67e22">44</div>
+          <div class="stat-mini-label">Grupos/Mes</div>
+        </div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Adesao ao Tratamento</span>
+          <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>78%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill red" style="width:78%"></div></div>
+      </div>
+      <div class="progress-item">
+        <div class="progress-header">
+          <span class="progress-label">Plano Terapeutico Singular</span>
+          <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>84%</span></span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill red" style="width:84%"></div></div>
+      </div>
+      <div style="margin-top:16px;padding:14px;background:#fdedec;border-radius:10px">
+        <div style="font-size:13px;font-weight:700;color:#c0392b"><i class="fas fa-exclamation-triangle"></i> Atencao</div>
+        <div style="font-size:12px;color:#718096;margin-top:6px">CAPS AD com lista de espera de 23 usuarios. Necessidade de ampliar capacidade de atendimento.</div>
+      </div>
+      <div style="margin-top:12px;padding:14px;background:#f0faf5;border-radius:10px">
+        <div style="font-size:13px;font-weight:700;color:#1a7a4a"><i class="fas fa-check-circle"></i> Destaque</div>
+        <div style="font-size:12px;color:#718096;margin-top:6px">Taxa de reinternacao psiquiatrica abaixo de 9% - melhor resultado dos ultimos 3 anos.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <strong>Prefeitura Municipal de Araguari - Secretaria de Saude</strong> | Atualizado em tempo real
+  <br><span style="font-size:11px;opacity:0.7">Sistema de Informacoes em Saude - Versao 2025.1 | Dados referentes ao municipio de Araguari-MG (pop. ~120.000 hab.)</span>
+</footer>
+
+<script>
+// ===== DATE/TIME =====
+function updateDateTime() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('current-date').textContent = now.toLocaleDateString('pt-BR', opts);
+  document.getElementById('current-time').textContent = now.toLocaleTimeString('pt-BR');
+}
+updateDateTime();
+setInterval(updateDateTime, 1000);
+
+// ===== SIDEBAR =====
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+}
+function setActive(el) {
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ===== SCROLL SPY =====
+const sections = ['inicio','atencao-primaria','vigilancia-sanitaria','vigilancia-epidemiologica','vacinacao','odontologia','saude-mental'];
+window.addEventListener('scroll', () => {
+  let current = 'inicio';
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && window.scrollY >= el.offsetTop - 100) current = id;
+  });
+  document.querySelectorAll('.sidebar-link').forEach(link => {
+    link.classList.remove('active');
+    if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+  });
+});
+
+// ===== CHART DEFAULTS =====
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#718096';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.padding = 16;
+
+const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const months6 = ['Jan','Fev','Mar','Abr','Mai','Jun'];
+
+// ===== ATENCAO PRIMARIA CHARTS =====
+new Chart(document.getElementById('chartAP1'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Atendimentos',
+      data: [9840, 10120, 11340, 10890, 11560, 12847, 11200, 12100, 11800, 12400, 11900, 13200],
+      borderColor: '#1a7a4a', backgroundColor: 'rgba(26,122,74,0.1)',
+      tension: 0.4, fill: true, pointBackgroundColor: '#1a7a4a', pointRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
+});
+
+new Chart(document.getElementById('chartAP2'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Consulta Medica','Enfermagem','Odontologia','Procedimentos','Visita Domiciliar'],
+    datasets: [{ data: [4210, 2890, 1876, 2637, 1234],
+      backgroundColor: ['#1a7a4a','#2ecc71','#16a085','#3498db','#9b59b6'],
+      borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } } }
+});
+
+// ===== VIGILANCIA SANITARIA CHARTS =====
+new Chart(document.getElementById('chartVS1'), {
+  type: 'bar',
+  data: {
+    labels: ['Alimenticio','Farmacia','Saude','Estetica','Outros'],
+    datasets: [{ label: 'Vistorias',
+      data: [68, 24, 31, 18, 15],
+      backgroundColor: ['#2980b9','#3498db','#5dade2','#85c1e9','#aed6f1'],
+      borderRadius: 6 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
+});
+
+new Chart(document.getElementById('chartVS2'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Vistorias',
+      data: [112, 98, 134, 121, 143, 156, 128, 145, 138, 162, 149, 171],
+      borderColor: '#2980b9', backgroundColor: 'rgba(41,128,185,0.1)',
+      tension: 0.4, fill: true, pointBackgroundColor: '#2980b9', pointRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
+});
+
+// ===== VIGILANCIA EPIDEMIOLOGICA - DADOS E MAPA =====
+const bairroData = {"AMORIM":{"total":{"dengue_not":284,"dengue_conf":35,"chik_not":306,"chik_conf":126,"hosp":16,"obitos":0},"months":{"01":{"d_n":13,"d_c":7,"c_n":2,"c_c":1},"02":{"d_n":61,"d_c":7,"c_n":56,"c_c":43},"03":{"d_n":111,"d_c":14,"c_n":142,"c_c":77},"04":{"d_n":74,"d_c":6,"c_n":84,"c_c":5},"05":{"d_n":23,"d_c":0,"c_n":22,"c_c":0}}},"BRASILIA":{"total":{"dengue_not":261,"dengue_conf":30,"chik_not":310,"chik_conf":138,"hosp":3,"obitos":0},"months":{"01":{"d_n":15,"d_c":8,"c_n":5,"c_c":1},"02":{"d_n":72,"d_c":7,"c_n":66,"c_c":54},"03":{"d_n":93,"d_c":12,"c_n":118,"c_c":82},"04":{"d_n":63,"d_c":2,"c_n":95,"c_c":1},"05":{"d_n":17,"d_c":0,"c_n":25,"c_c":0}}},"INDEPENDENCIA":{"total":{"dengue_not":185,"dengue_conf":25,"chik_not":288,"chik_conf":89,"hosp":3,"obitos":0},"months":{"01":{"d_n":6,"d_c":3,"c_n":1,"c_c":1},"02":{"d_n":25,"d_c":2,"c_n":23,"c_c":11},"03":{"d_n":78,"d_c":16,"c_n":124,"c_c":68},"04":{"d_n":60,"d_c":4,"c_n":100,"c_c":9},"05":{"d_n":14,"d_c":0,"c_n":40,"c_c":0}}},"CENTRO":{"total":{"dengue_not":208,"dengue_conf":35,"chik_not":250,"chik_conf":101,"hosp":12,"obitos":0},"months":{"01":{"d_n":15,"d_c":5,"c_n":2,"c_c":1},"02":{"d_n":69,"d_c":13,"c_n":53,"c_c":38},"03":{"d_n":64,"d_c":12,"c_n":103,"c_c":58},"04":{"d_n":50,"d_c":5,"c_n":73,"c_c":3},"05":{"d_n":8,"d_c":0,"c_n":17,"c_c":0}}},"MARIA EUGENIA":{"total":{"dengue_not":204,"dengue_conf":24,"chik_not":232,"chik_conf":111,"hosp":8,"obitos":0},"months":{"01":{"d_n":4,"d_c":2,"c_n":0,"c_c":0},"02":{"d_n":60,"d_c":10,"c_n":51,"c_c":41},"03":{"d_n":85,"d_c":8,"c_n":114,"c_c":65},"04":{"d_n":51,"d_c":4,"c_n":54,"c_c":5},"05":{"d_n":3,"d_c":0,"c_n":13,"c_c":0}}},"JARDIM MILENIUM":{"total":{"dengue_not":177,"dengue_conf":29,"chik_not":245,"chik_conf":72,"hosp":3,"obitos":0},"months":{"01":{"d_n":10,"d_c":3,"c_n":0,"c_c":0},"02":{"d_n":34,"d_c":5,"c_n":34,"c_c":20},"03":{"d_n":73,"d_c":17,"c_n":105,"c_c":48},"04":{"d_n":48,"d_c":4,"c_n":88,"c_c":4},"05":{"d_n":12,"d_c":0,"c_n":18,"c_c":0}}},"NOVO HORIZONTE":{"total":{"dengue_not":142,"dengue_conf":22,"chik_not":264,"chik_conf":31,"hosp":5,"obitos":0},"months":{"01":{"d_n":8,"d_c":5,"c_n":0,"c_c":0},"02":{"d_n":13,"d_c":1,"c_n":13,"c_c":4},"03":{"d_n":43,"d_c":10,"c_n":69,"c_c":23},"04":{"d_n":64,"d_c":6,"c_n":146,"c_c":4},"05":{"d_n":13,"d_c":0,"c_n":34,"c_c":0}}},"SAO SEBASTIAO":{"total":{"dengue_not":169,"dengue_conf":16,"chik_not":211,"chik_conf":56,"hosp":4,"obitos":0},"months":{"01":{"d_n":7,"d_c":2,"c_n":1,"c_c":1},"02":{"d_n":25,"d_c":3,"c_n":21,"c_c":12},"03":{"d_n":74,"d_c":8,"c_n":76,"c_c":39},"04":{"d_n":44,"d_c":2,"c_n":76,"c_c":4},"05":{"d_n":17,"d_c":0,"c_n":37,"c_c":0}}},"SANTA HELENA":{"total":{"dengue_not":165,"dengue_conf":32,"chik_not":196,"chik_conf":74,"hosp":5,"obitos":0},"months":{"01":{"d_n":13,"d_c":9,"c_n":1,"c_c":0},"02":{"d_n":31,"d_c":6,"c_n":26,"c_c":20},"03":{"d_n":75,"d_c":14,"c_n":98,"c_c":47},"04":{"d_n":37,"d_c":3,"c_n":59,"c_c":7},"05":{"d_n":8,"d_c":0,"c_n":12,"c_c":0}}},"BELA SUICA":{"total":{"dengue_not":149,"dengue_conf":37,"chik_not":211,"chik_conf":50,"hosp":5,"obitos":0},"months":{"01":{"d_n":11,"d_c":7,"c_n":1,"c_c":0},"02":{"d_n":29,"d_c":6,"c_n":17,"c_c":10},"03":{"d_n":59,"d_c":18,"c_n":73,"c_c":33},"04":{"d_n":41,"d_c":6,"c_n":79,"c_c":7},"05":{"d_n":9,"d_c":0,"c_n":40,"c_c":0}}},"GOIAS":{"total":{"dengue_not":114,"dengue_conf":16,"chik_not":205,"chik_conf":46,"hosp":2,"obitos":0},"months":{"01":{"d_n":11,"d_c":7,"c_n":2,"c_c":2},"02":{"d_n":17,"d_c":0,"c_n":15,"c_c":5},"03":{"d_n":43,"d_c":7,"c_n":72,"c_c":35},"04":{"d_n":27,"d_c":2,"c_n":86,"c_c":4},"05":{"d_n":16,"d_c":0,"c_n":29,"c_c":0}}},"FATIMA":{"total":{"dengue_not":96,"dengue_conf":17,"chik_not":176,"chik_conf":49,"hosp":0,"obitos":0},"months":{"01":{"d_n":3,"d_c":0,"c_n":2,"c_c":0},"02":{"d_n":9,"d_c":3,"c_n":11,"c_c":5},"03":{"d_n":48,"d_c":11,"c_n":87,"c_c":41},"04":{"d_n":24,"d_c":1,"c_n":59,"c_c":3},"05":{"d_n":10,"d_c":0,"c_n":16,"c_c":0}}},"SAO JOAO":{"total":{"dengue_not":124,"dengue_conf":20,"chik_not":139,"chik_conf":54,"hosp":5,"obitos":0},"months":{"01":{"d_n":11,"d_c":5,"c_n":4,"c_c":1},"02":{"d_n":37,"d_c":6,"c_n":30,"c_c":21},"03":{"d_n":40,"d_c":8,"c_n":55,"c_c":30},"04":{"d_n":28,"d_c":1,"c_n":40,"c_c":2},"05":{"d_n":7,"d_c":0,"c_n":9,"c_c":0}}},"BOSQUE":{"total":{"dengue_not":86,"dengue_conf":14,"chik_not":137,"chik_conf":54,"hosp":1,"obitos":0},"months":{"01":{"d_n":9,"d_c":4,"c_n":2,"c_c":1},"02":{"d_n":18,"d_c":3,"c_n":12,"c_c":7},"03":{"d_n":34,"d_c":3,"c_n":67,"c_c":42},"04":{"d_n":21,"d_c":4,"c_n":41,"c_c":4},"05":{"d_n":4,"d_c":0,"c_n":15,"c_c":0}}},"MIRANDA":{"total":{"dengue_not":97,"dengue_conf":18,"chik_not":109,"chik_conf":18,"hosp":4,"obitos":0},"months":{"01":{"d_n":11,"d_c":7,"c_n":3,"c_c":2},"02":{"d_n":22,"d_c":3,"c_n":20,"c_c":6},"03":{"d_n":19,"d_c":3,"c_n":30,"c_c":9},"04":{"d_n":36,"d_c":5,"c_n":42,"c_c":1},"05":{"d_n":8,"d_c":0,"c_n":14,"c_c":0}}},"PARAISO":{"total":{"dengue_not":72,"dengue_conf":9,"chik_not":101,"chik_conf":12,"hosp":1,"obitos":0},"months":{"01":{"d_n":6,"d_c":2,"c_n":2,"c_c":1},"02":{"d_n":5,"d_c":0,"c_n":4,"c_c":1},"03":{"d_n":20,"d_c":6,"c_n":22,"c_c":7},"04":{"d_n":27,"d_c":1,"c_n":52,"c_c":3},"05":{"d_n":12,"d_c":0,"c_n":21,"c_c":0}}},"OURO VERDE":{"total":{"dengue_not":73,"dengue_conf":9,"chik_not":95,"chik_conf":25,"hosp":5,"obitos":1},"months":{"01":{"d_n":12,"d_c":3,"c_n":3,"c_c":1},"02":{"d_n":6,"d_c":0,"c_n":5,"c_c":2},"03":{"d_n":23,"d_c":2,"c_n":36,"c_c":18},"04":{"d_n":28,"d_c":4,"c_n":34,"c_c":4},"05":{"d_n":4,"d_c":0,"c_n":17,"c_c":0}}},"VIENO":{"total":{"dengue_not":80,"dengue_conf":15,"chik_not":85,"chik_conf":16,"hosp":4,"obitos":0},"months":{"01":{"d_n":6,"d_c":5,"c_n":0,"c_c":0},"02":{"d_n":7,"d_c":0,"c_n":3,"c_c":0},"03":{"d_n":30,"d_c":6,"c_n":35,"c_c":14},"04":{"d_n":32,"d_c":4,"c_n":29,"c_c":2},"05":{"d_n":4,"d_c":0,"c_n":18,"c_c":0}}},"PORTAL DOS IPES":{"total":{"dengue_not":96,"dengue_conf":19,"chik_not":63,"chik_conf":14,"hosp":0,"obitos":0},"months":{"01":{"d_n":7,"d_c":2,"c_n":0,"c_c":0},"02":{"d_n":15,"d_c":1,"c_n":11,"c_c":4},"03":{"d_n":32,"d_c":13,"c_n":19,"c_c":7},"04":{"d_n":36,"d_c":3,"c_n":24,"c_c":3},"05":{"d_n":6,"d_c":0,"c_n":9,"c_c":0}}},"MONTE MORIA":{"total":{"dengue_not":56,"dengue_conf":7,"chik_not":72,"chik_conf":16,"hosp":0,"obitos":0},"months":{"01":{"d_n":4,"d_c":3,"c_n":0,"c_c":0},"02":{"d_n":9,"d_c":0,"c_n":6,"c_c":2},"03":{"d_n":15,"d_c":1,"c_n":21,"c_c":9},"04":{"d_n":19,"d_c":2,"c_n":35,"c_c":5},"05":{"d_n":8,"d_c":0,"c_n":10,"c_c":0}}}};
+
+// Coordenadas aproximadas dos bairros de Araguari-MG
+const bairroCoords = {
+  "AMORIM": [-18.6350, -48.1950],
+  "BRASILIA": [-18.6520, -48.2050],
+  "INDEPENDENCIA": [-18.6400, -48.1850],
+  "CENTRO": [-18.6470, -48.1900],
+  "MARIA EUGENIA": [-18.6580, -48.1820],
+  "JARDIM MILENIUM": [-18.6330, -48.2100],
+  "NOVO HORIZONTE": [-18.6600, -48.2000],
+  "SAO SEBASTIAO": [-18.6420, -48.1980],
+  "SANTA HELENA": [-18.6380, -48.1780],
+  "BELA SUICA": [-18.6300, -48.1880],
+  "GOIAS": [-18.6500, -48.1830],
+  "FATIMA": [-18.6550, -48.1950],
+  "SAO JOAO": [-18.6440, -48.2030],
+  "BOSQUE": [-18.6360, -48.1730],
+  "MIRANDA": [-18.6530, -48.1780],
+  "PARAISO": [-18.6480, -48.1750],
+  "OURO VERDE": [-18.6620, -48.2080],
+  "VIENO": [-18.6570, -48.1700],
+  "PORTAL DOS IPES": [-18.6280, -48.1950],
+  "MONTE MORIA": [-18.6650, -48.1900],
+  "GOIAS PARTE ALTA": [-18.6510, -48.1800],
+  "SANTIAGO": [-18.6390, -48.2050],
+  "AEROPORTO": [-18.6680, -48.1850],
+  "JOCKEY CLUB": [-18.6450, -48.1700],
+  "GUTIERREZ": [-18.6340, -48.2000],
+  "SIBIPIRUNA": [-18.6310, -48.1800],
+  "SANTA TEREZINHA": [-18.6600, -48.2100],
+  "SAO JUDAS": [-18.6430, -48.2100],
+  "VILA OLIMPICA": [-18.6560, -48.2050],
+  "FATIMA II": [-18.6570, -48.1980],
+  "INDUSTRIAL": [-18.6700, -48.1750],
+  "AMANHECE": [-18.6250, -48.1900],
+  "MADRI": [-18.6490, -48.2100],
+  "NOSSA SENHORA DE FATIMA": [-18.6540, -48.1930],
+  "PARQUE DOS VERDES": [-18.6380, -48.2120],
+  "ROSARIO": [-18.6460, -48.1870],
+  "INTERLAGOS": [-18.6270, -48.2050],
+  "JOQUEI CLUBE": [-18.6440, -48.1680],
+  "ALVORADA": [-18.6630, -48.1950],
+  "AREA RURAL": [-18.6750, -48.2150],
+  "BEATRIZ": [-18.6610, -48.2130],
+  "PORTAL DE FATIMA": [-18.6540, -48.2060],
+  "JARDIM REGINA": [-18.6590, -48.2120],
+  "PIRACAIBA": [-18.6720, -48.1800],
+  "NOSSA SENHORA DA PENHA": [-18.6500, -48.2130],
+  "ALAN KARDEC": [-18.6410, -48.2080],
+  "NAO INFORMADO": [-18.6470, -48.1900]
+};
+
+// Inicializar mapa
+const map = L.map('map-araguari').setView([-18.648, -48.195], 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap',
+  maxZoom: 18
+}).addTo(map);
+
+let mapMarkers = [];
+
+function getColor(value) {
+  return value > 450 ? '#a50f15' :
+         value > 300 ? '#de2d26' :
+         value > 150 ? '#fb6a4a' :
+         value > 50  ? '#fcae91' :
+                       '#fee5d9';
+}
+
+function getRadius(value) {
+  return value > 450 ? 32 :
+         value > 300 ? 27 :
+         value > 150 ? 22 :
+         value > 50  ? 17 :
+                       12;
+}
+
+function aplicarFiltros() {
+  const mes = document.getElementById('filtro-mes').value;
+  const agravo = document.getElementById('filtro-agravo').value;
+  const tipo = document.getElementById('filtro-tipo').value;
+  const topN = parseInt(document.getElementById('filtro-top').value);
+
+  // Build filtered data
+  let filtered = [];
+  for (const [bairro, info] of Object.entries(bairroData)) {
+    if (bairro === 'NAO INFORMADO') continue;
+    let dengue = 0, chik = 0;
+    if (mes === 'todos') {
+      if (tipo === 'notificados') {
+        dengue = info.total.dengue_not;
+        chik = info.total.chik_not;
+      } else {
+        dengue = info.total.dengue_conf;
+        chik = info.total.chik_conf;
+      }
+    } else {
+      const m = info.months[mes] || {d_n:0,d_c:0,c_n:0,c_c:0};
+      if (tipo === 'notificados') {
+        dengue = m.d_n;
+        chik = m.c_n;
+      } else {
+        dengue = m.d_c;
+        chik = m.c_c;
+      }
+    }
+
+    let total = 0;
+    if (agravo === 'dengue') total = dengue;
+    else if (agravo === 'chik') total = chik;
+    else total = dengue + chik;
+
+    filtered.push({ bairro, dengue, chik, total });
+  }
+
+  filtered.sort((a, b) => b.total - a.total);
+  filtered = filtered.slice(0, topN);
+
+  // Update KPIs
+  const totalDengue = filtered.reduce((s, r) => s + r.dengue, 0);
+  const totalChik = filtered.reduce((s, r) => s + r.chik, 0);
+  document.getElementById('kpi-total').textContent = (totalDengue + totalChik).toLocaleString('pt-BR');
+  document.getElementById('kpi-dengue').textContent = totalDengue.toLocaleString('pt-BR');
+  document.getElementById('kpi-chik').textContent = totalChik.toLocaleString('pt-BR');
+
+  // Update subtitle
+  const mesLabels = {'todos':'Todos os meses','01':'Jan/2026','02':'Fev/2026','03':'Mar/2026','04':'Abr/2026','05':'Mai/2026'};
+  const agravoLabels = {'todos':'Dengue+Chik','dengue':'Dengue','chik':'Chikungunya'};
+  document.getElementById('ranking-subtitle').textContent = `(${mesLabels[mes]} - ${agravoLabels[agravo]} - ${tipo === 'notificados' ? 'Notificados' : 'Confirmados'})`;
+
+  // Update map
+  mapMarkers.forEach(m => map.removeLayer(m));
+  mapMarkers = [];
+
+  const maxVal = filtered.length > 0 ? filtered[0].total : 1;
+
+  filtered.forEach((item, idx) => {
+    const coords = bairroCoords[item.bairro];
+    if (!coords || item.total === 0) return;
+
+    const circle = L.circleMarker(coords, {
+      radius: getRadius(item.total),
+      fillColor: getColor(item.total),
+      color: '#fff',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.8
+    }).addTo(map);
+
+    circle.bindPopup(`
+      <div style="font-family:Inter,sans-serif;min-width:180px">
+        <strong style="font-size:14px">${item.bairro}</strong>
+        <hr style="margin:6px 0;border:none;border-top:1px solid #eee">
+        <div style="font-size:12px;line-height:1.8">
+          <span style="color:#e74c3c">&#9679;</span> Dengue: <strong>${item.dengue}</strong><br>
+          <span style="color:#8e44ad">&#9679;</span> Chikungunya: <strong>${item.chik}</strong><br>
+          <strong>Total: ${item.total}</strong>
+        </div>
+      </div>
+    `);
+
+    circle.bindTooltip(item.bairro, {permanent: false, direction: 'top', className: 'leaflet-tooltip'});
+    mapMarkers.push(circle);
+  });
+
+  // Update ranking table
+  const tbody = document.getElementById('ranking-tbody');
+  tbody.innerHTML = '';
+  filtered.forEach((item, idx) => {
+    const pct = maxVal > 0 ? (item.total / maxVal * 100) : 0;
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td style="font-weight:700;color:var(--text-light)">${idx+1}</td>
+      <td style="font-weight:600">${item.bairro}</td>
+      <td style="color:#e74c3c;font-weight:600">${item.dengue}</td>
+      <td style="color:#8e44ad;font-weight:600">${item.chik}</td>
+      <td style="font-weight:700">${item.total}</td>
+      <td class="bar-cell"><div class="ve-inline-bar" style="width:${pct}%;background:linear-gradient(90deg,#e74c3c,#8e44ad)"></div></td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+// Initialize
+aplicarFiltros();
+
+// Epidemic curve chart
+const curvaLabels = ["SE 01","SE 02","SE 03","SE 04","SE 05","SE 06","SE 07","SE 08","SE 09","SE 10","SE 11","SE 12","SE 13","SE 14","SE 15","SE 16","SE 17","SE 18","SE 19","SE 20"];
+const curvaDengue = [42,43,55,82,89,136,203,254,369,268,313,217,265,259,221,223,240,137,45,1];
+const curvaChik = [3,9,12,25,54,110,174,235,373,386,431,407,326,401,400,387,363,301,107,0];
+
+new Chart(document.getElementById('chartVE1'), {
+  type: 'line',
+  data: {
+    labels: curvaLabels,
+    datasets: [
+      { label: 'Dengue (A90)', data: curvaDengue, borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.1)', tension: 0.3, fill: true, pointRadius: 3, pointBackgroundColor: '#e74c3c' },
+      { label: 'Chikungunya (A92.0)', data: curvaChik, borderColor: '#8e44ad', backgroundColor: 'rgba(142,68,173,0.1)', tension: 0.3, fill: true, pointRadius: 3, pointBackgroundColor: '#8e44ad' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#f0f4f8' }, title: { display: true, text: 'Notificacoes', font: { size: 11 } } },
+      x: { grid: { display: false }, title: { display: true, text: 'Semana Epidemiologica 2026', font: { size: 11 } } }
+    }
+  }
+});
+
+// Monthly comparison chart
+new Chart(document.getElementById('chartVE2'), {
+  type: 'bar',
+  data: {
+    labels: ['Jan/26','Fev/26','Mar/26','Abr/26','Mai/26'],
+    datasets: [
+      { label: 'Dengue', data: [237, 682, 1272, 1028, 258], backgroundColor: 'rgba(231,76,60,0.8)', borderRadius: 6 },
+      { label: 'Chikungunya', data: [50, 573, 1752, 1612, 518], backgroundColor: 'rgba(142,68,173,0.8)', borderRadius: 6 }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { beginAtZero: true, grid: { color: '#f0f4f8' }, title: { display: true, text: 'Casos', font: { size: 11 } } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ===== VACINACAO CHARTS =====
+new Chart(document.getElementById('chartVAC1'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Doses Aplicadas',
+      data: [2890, 3120, 3450, 4210, 3980, 3421, 3100, 3560, 3280, 3740, 3190, 4100],
+      borderColor: '#8e44ad', backgroundColor: 'rgba(142,68,173,0.1)',
+      tension: 0.4, fill: true, pointBackgroundColor: '#8e44ad', pointRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
+});
+
+new Chart(document.getElementById('chartVAC2'), {
+  type: 'bar',
+  data: {
+    labels: ['Polio','SCR','Penta','Influenza','HPV','COVID','Hep.B','Pneumo'],
+    datasets: [{
+      label: 'Cobertura %',
+      data: [95, 91, 89, 72, 68, 61, 87, 93],
+      backgroundColor: (ctx) => {
+        const v = ctx.raw;
+        return v >= 90 ? 'rgba(26,122,74,0.8)' : v >= 70 ? 'rgba(230,126,34,0.8)' : 'rgba(231,76,60,0.8)';
+      },
+      borderRadius: 6
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f0f4f8' },
+      ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } } }
+});
+
+// ===== ODONTOLOGIA CHARTS =====
+new Chart(document.getElementById('chartODO1'), {
+  type: 'bar',
+  data: {
+    labels: ['1a Consulta','Restauracao','Extracao','Endodontia','Periodontia','Fluor','Escovacao'],
+    datasets: [{ label: 'Procedimentos',
+      data: [876, 634, 234, 187, 134, 1876, 2340],
+      backgroundColor: 'rgba(22,160,133,0.8)', borderRadius: 6 }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, grid: { color: '#f0f4f8' } }, x: { grid: { display: false },
+      ticks: { maxRotation: 45 } } } }
+});
+
+new Chart(document.getElementById('chartODO2'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Procedimentos',
+      data: [1540, 1620, 1780, 1690, 1820, 1876, 1720, 1890, 1810, 1950, 1840, 2100],
+      borderColor: '#16a085', backgroundColor: 'rgba(22,160,133,0.1)',
+      tension: 0.4, fill: true, pointBackgroundColor: '#16a085', pointRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
+});
+
+// ===== SAUDE MENTAL CHARTS =====
+new Chart(document.getElementById('chartSM1'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Transt. Humor','Esquizofrenia','Transt. Ansiedade','Depend. Quimica','Transt. Personalidade','Outros'],
+    datasets: [{ data: [156, 98, 134, 187, 45, 92],
+      backgroundColor: ['#c0392b','#e74c3c','#e67e22','#9b59b6','#3498db','#95a5a6'],
+      borderWidth: 2, borderColor: '#fff' }]
+  },
+  options: { responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom' } } }
+});
+
+new Chart(document.getElementById('chartSM2'), {
+  type: 'line',
+  data: {
+    labels: months,
+    datasets: [{
+      label: 'Atendimentos',
+      data: [3890, 4120, 4340, 4180, 4520, 4648, 4210, 4780, 4560, 4890, 4720, 5100],
+      borderColor: '#c0392b', backgroundColor: 'rgba(192,57,43,0.1)',
+      tension: 0.4, fill: true, pointBackgroundColor: '#c0392b', pointRadius: 4
+    }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
+});
+
+// ===== ANIMATE PROGRESS BARS =====
+document.addEventListener('DOMContentLoaded', () => {
+  const bars = document.querySelectorAll('.progress-bar-fill');
+  bars.forEach(bar => {
+    const w = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(() => { bar.style.width = w; }, 300);
+  });
+});
+</script>
+</body>
+</html>
