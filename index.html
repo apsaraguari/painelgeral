@@ -865,6 +865,12 @@ a { text-decoration: none; color: inherit; }
   <div class="cards-row-2">
     <div class="card" style="padding:0;overflow:hidden">
       <div class="card-title" style="padding:18px 22px 0"><i class="fas fa-map-marked-alt"></i> Mapa de Calor por Bairro - Araguari-MG</div>
+      <div style="padding:4px 22px 10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="toggle-edls" checked onchange="toggleEDLs()">
+          <span style="display:inline-block;width:10px;height:10px;background:#E65100;border-radius:50%"></span> EDLs Pontos Estrategicos (59)
+        </label>
+      </div>
       <div class="ve-map-container" id="map-araguari">
         <div class="ve-map-legend" id="map-legend">
           <div class="ve-legend-title">Notificacoes por Bairro</div>
@@ -873,6 +879,9 @@ a { text-decoration: none; color: inherit; }
           <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fb6a4a"></div><span class="ve-legend-label">151 - 300</span></div>
           <div class="ve-legend-item"><div class="ve-legend-color" style="background:#de2d26"></div><span class="ve-legend-label">301 - 450</span></div>
           <div class="ve-legend-item"><div class="ve-legend-color" style="background:#a50f15"></div><span class="ve-legend-label">&gt; 450</span></div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
+            <div class="ve-legend-item"><div style="width:10px;height:10px;background:#E65100;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Ponto Estrategico</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1510,6 +1519,45 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let mapMarkers = [];
+
+// EDLs Pontos Estratégicos
+const edlPEPoints = [{"name":"Rua Joaquim Barbosa, 1290, Bairro Aeroporto, Araguari - MG","bairro":"Aeroporto","lat":-18.667442,"lon":-48.1869},{"name":"Rua Maria Borela Pellegrini, 1777, Bairro Aeroporto","bairro":"Aeroporto","lat":-18.6689,"lon":-48.186107},{"name":"BR-050, 830, Distrito Industrial, Araguari - MG","bairro":"Distrito Industrial","lat":-18.671054,"lon":-48.177293},{"name":"Rua A, 32, Bairro Bosque, Araguari - MG","bairro":"Bosque","lat":-18.634431,"lon":-48.174652},{"name":"Rua Raul José de Belem, 2830, Bairro Bosque","bairro":"Bosque","lat":-18.636312,"lon":-48.174881},{"name":"Rua Andorinhas, 90, Bairro Bosque","bairro":"Bosque","lat":-18.637125,"lon":-48.172979},{"name":"Av. Batalhão Mauá, 1992, Bairro Maria Eugênia","bairro":"Maria Eugênia","lat":-18.659894,"lon":-48.183205},{"name":"Rua Prof. João Batista da Costa, 90, Maria Eugênia","bairro":"Maria Eugênia","lat":-18.6574,"lon":-48.18182},{"name":"Rua Prof. João Batista da Costa, 43, Maria Eugênia","bairro":"Maria Eugênia","lat":-18.659118,"lon":-48.181643},{"name":"Rua Prof. João Batista da Costa, 40, Maria Eugênia","bairro":"Maria Eugênia","lat":-18.656762,"lon":-48.183974},{"name":"Rua Eurípedes Barsanulfo, 602, Santa Helena","bairro":"Santa Helena","lat":-18.636777,"lon":-48.177207},{"name":"Rua Monte Alegre, 73, Santa Helena","bairro":"Santa Helena","lat":-18.638639,"lon":-48.179378},{"name":"Viveiro Flora Brasil, Av. Teodoreto Veloso de Carvalho","bairro":"Não identificado","lat":-18.645171,"lon":-48.190654},{"name":"Rua Secundária, 350, Bairro Ouro Verde","bairro":"Ouro Verde","lat":-18.663629,"lon":-48.209613},{"name":"Rua Maria Abadia de Araújo, 51, Sibipiruna","bairro":"Sibipiruna","lat":-18.62961,"lon":-48.179585},{"name":"Rua Cecília Schwartznann, 530, Sibipiruna","bairro":"Sibipiruna","lat":-18.629771,"lon":-48.179081},{"name":"Rua Piauí, 80, Bairro Paraíso","bairro":"Paraíso","lat":-18.647855,"lon":-48.173108},{"name":"Rua Sebastião Naves, 460, Paraíso","bairro":"Paraíso","lat":-18.648486,"lon":-48.174792},{"name":"Rua Sebastião Naves, 336, Paraíso","bairro":"Paraíso","lat":-18.646682,"lon":-48.174526},{"name":"R. João Rodrigues da Cunha, 2010 - Araguari","bairro":"Não identificado","lat":-18.645553,"lon":-48.189691},{"name":"Rua João Rodrigues da Cunha, 2010, Park dos Verdes","bairro":"Park dos Verdes","lat":-18.637182,"lon":-48.213817},{"name":"Rua Walter Santiago, 671, Santiago","bairro":"Santiago","lat":-18.640088,"lon":-48.205842},{"name":"Rua Bela Vista, 10, Bairro Amorim","bairro":"Amorim","lat":-18.636681,"lon":-48.196069},{"name":"Rua São Salvador, 681, Amorim","bairro":"Amorim","lat":-18.636596,"lon":-48.195888},{"name":"Rua Guarani, 155, Amorim","bairro":"Amorim","lat":-18.634457,"lon":-48.195541},{"name":"Rua Padre Nicácio, 1110, Amorim","bairro":"Amorim","lat":-18.635519,"lon":-48.196162},{"name":"Rua Abraão Calil, 135, Amorim","bairro":"Amorim","lat":-18.635932,"lon":-48.193253},{"name":"Av. Vereador Geraldo Teodoro, 1100, Amorim","bairro":"Amorim","lat":-18.634408,"lon":-48.194563},{"name":"Rua Joaquim Barbosa, 1355, Amorim","bairro":"Amorim","lat":-18.636315,"lon":-48.194083},{"name":"Rua Trindade, 221, Novo Horizonte","bairro":"Novo Horizonte","lat":-18.661346,"lon":-48.200482},{"name":"Rua Lamunier Queiroz Lopes, 510, Industrial","bairro":"Industrial","lat":-18.668042,"lon":-48.17444},{"name":"Rua Saturno, 65, Novo Horizonte","bairro":"Novo Horizonte","lat":-18.659772,"lon":-48.199262},{"name":"Rodovia BR-050, Km 39,5, Distrito Industrial","bairro":"Distrito Industrial","lat":-18.670629,"lon":-48.176896},{"name":"Rua Wanda Pires de Carvalho, 31, Araguari","bairro":"Não identificado","lat":-18.648084,"lon":-48.191872},{"name":"Rua Marta Aparecida Neves, 251, Independência","bairro":"Independência","lat":-18.640738,"lon":-48.185929},{"name":"Rua André Fernandes, 531, Vieno","bairro":"Vieno","lat":-18.658156,"lon":-48.168228},{"name":"Rua Natália Batista Dorneles, 301, Vieno","bairro":"Vieno","lat":-18.655495,"lon":-48.170741},{"name":"Rua Ana Batista, 740, Vieno","bairro":"Vieno","lat":-18.656378,"lon":-48.170417},{"name":"Rua Diolina Américo da Silva, 115, Vieno","bairro":"Vieno","lat":-18.655342,"lon":-48.170165},{"name":"Rua das Candeias, 596, São Judas Tadeu","bairro":"São Judas Tadeu","lat":-18.64394,"lon":-48.211013},{"name":"Rua Orlando César Viera, 240, Goiás Parte Alta","bairro":"Goiás Parte Alta","lat":-18.650755,"lon":-48.180949},{"name":"Rua Pastor Florentino Ferreira, 138, N.S Fátima","bairro":"N.S Fátima","lat":-18.653662,"lon":-48.191409},{"name":"Avenida Brasil, 1445, Araguari - MG","bairro":"Não identificado","lat":-18.647402,"lon":-48.191123},{"name":"Rua Amazonas, 1065, Araguari - MG","bairro":"Não identificado","lat":-18.64501,"lon":-48.189962},{"name":"Rua Florestina, 704, Miranda","bairro":"Miranda","lat":-18.654636,"lon":-48.179812},{"name":"Av. da Saudade, 284, Miranda","bairro":"Miranda","lat":-18.654561,"lon":-48.17749},{"name":"Rua da Prata, 31, Miranda","bairro":"Miranda","lat":-18.651832,"lon":-48.178311},{"name":"Rua Calimério de Ávila, 567, Miranda","bairro":"Miranda","lat":-18.654746,"lon":-48.178474},{"name":"Rua Florestina, 240, Miranda","bairro":"Miranda","lat":-18.651016,"lon":-48.177884},{"name":"Avenida das Palmeiras, 41, Alan Kardec","bairro":"Alan Kardec","lat":-18.639116,"lon":-48.206557},{"name":"Rua Alvim Borges, 140, Goiás","bairro":"Goiás","lat":-18.651954,"lon":-48.182117},{"name":"Av. Senador Melo Viana, 960, Goiás","bairro":"Goiás","lat":-18.649273,"lon":-48.182852},{"name":"Rua Coromandel, 1149, Jóquei Clube","bairro":"Jóquei Clube","lat":-18.645933,"lon":-48.169436},{"name":"Rua Cristalina, 372, Brasília","bairro":"Brasília","lat":-18.653554,"lon":-48.205261},{"name":"Rua Meia Ponte, 130, Brasília","bairro":"Brasília","lat":-18.652185,"lon":-48.203185},{"name":"Rua Antônio Lemos da Silva, 559, Centro","bairro":"Centro","lat":-18.645497,"lon":-48.190946},{"name":"BR-050, Km 38, Distrito Industrial","bairro":"Distrito Industrial","lat":-18.671998,"lon":-48.179285},{"name":"BR-050, Km 38-5, Distrito Industrial","bairro":"Distrito Industrial","lat":-18.670349,"lon":-48.176518},{"name":"Av. Hugo Alessi, 915, Industrial","bairro":"Industrial","lat":-18.670806,"lon":-48.174444}];
+
+let edlMarkers = [];
+
+function criarEDLMarkers() {
+  edlPEPoints.forEach(point => {
+    const marker = L.circleMarker([point.lat, point.lon], {
+      radius: 6,
+      fillColor: '#E65100',
+      color: '#fff',
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.9
+    }).addTo(map);
+    marker.bindPopup(`
+      <div style="font-family:Inter,sans-serif;min-width:200px">
+        <div style="font-size:10px;font-weight:700;color:#E65100;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">
+          <i class="fas fa-map-pin"></i> EDL - Ponto Estrategico
+        </div>
+        <strong style="font-size:13px">${point.name}</strong>
+        <div style="font-size:11px;color:#718096;margin-top:4px">Bairro: ${point.bairro}</div>
+      </div>
+    `);
+    marker.bindTooltip(`PE: ${point.bairro}`, {direction: 'top'});
+    edlMarkers.push(marker);
+  });
+}
+
+function toggleEDLs() {
+  const checked = document.getElementById('toggle-edls').checked;
+  edlMarkers.forEach(m => {
+    if (checked) m.addTo(map);
+    else map.removeLayer(m);
+  });
+}
+
+criarEDLMarkers();
 
 function getColor(value) {
   return value > 450 ? '#a50f15' :
