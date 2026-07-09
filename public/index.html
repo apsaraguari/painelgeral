@@ -1524,7 +1524,40 @@ new Chart(document.getElementById('chartVS2'), {
 });
 
 // ===== VIGILANCIA EPIDEMIOLOGICA - DADOS E MAPA =====
-const bairroData = {"AMORIM":{"total":{"dengue_not":284,"dengue_conf":35,"chik_not":306,"chik_conf":126,"hosp":16,"obitos":0},"months":{"01":{"d_n":13,"d_c":7,"c_n":2,"c_c":1},"02":{"d_n":61,"d_c":7,"c_n":56,"c_c":43},"03":{"d_n":111,"d_c":14,"c_n":142,"c_c":77},"04":{"d_n":74,"d_c":6,"c_n":84,"c_c":5},"05":{"d_n":23,"d_c":0,"c_n":22,"c_c":0}}},"BRASILIA":{"total":{"dengue_not":261,"dengue_conf":30,"chik_not":310,"chik_conf":138,"hosp":3,"obitos":0},"months":{"01":{"d_n":15,"d_c":8,"c_n":5,"c_c":1},"02":{"d_n":72,"d_c":7,"c_n":66,"c_c":54},"03":{"d_n":93,"d_c":12,"c_n":118,"c_c":82},"04":{"d_n":63,"d_c":2,"c_n":95,"c_c":1},"05":{"d_n":17,"d_c":0,"c_n":25,"c_c":0}}},"INDEPENDENCIA":{"total":{"dengue_not":185,"dengue_conf":25,"chik_not":288,"chik_conf":89,"hosp":3,"obitos":0},"months":{"01":{"d_n":6,"d_c":3,"c_n":1,"c_c":1},"02":{"d_n":25,"d_c":2,"c_n":23,"c_c":11},"03":{"d_n":78,"d_c":16,"c_n":124,"c_c":68},"04":{"d_n":60,"d_c":4,"c_n":100,"c_c":9},"05":{"d_n":14,"d_c":0,"c_n":40,"c_c":0}}},"CENTRO":{"total":{"dengue_not":208,"dengue_conf":35,"chik_not":250,"chik_conf":101,"hosp":12,"obitos":0},"months":{"01":{"d_n":15,"d_c":5,"c_n":2,"c_c":1},"02":{"d_n":69,"d_c":13,"c_n":53,"c_c":38},"03":{"d_n":64,"d_c":12,"c_n":103,"c_c":58},"04":{"d_n":50,"d_c":5,"c_n":73,"c_c":3},"05":{"d_n":8,"d_c":0,"c_n":17,"c_c":0}}},"MARIA EUGENIA":{"total":{"dengue_not":204,"dengue_conf":24,"chik_not":232,"chik_conf":111,"hosp":8,"obitos":0},"months":{"01":{"d_n":4,"d_c":2,"c_n":0,"c_c":0},"02":{"d_n":60,"d_c":10,"c_n":51,"c_c":41},"03":{"d_n":85,"d_c":8,"c_n":114,"c_c":65},"04":{"d_n":51,"d_c":4,"c_n":54,"c_c":5},"05":{"d_n":3,"d_c":0,"c_n":13,"c_c":0}}},"JARDIM MILENIUM":{"total":{"dengue_not":177,"dengue_conf":29,"chik_not":245,"chik_conf":72,"hosp":3,"obitos":0},"months":{"01":{"d_n":10,"d_c":3,"c_n":0,"c_c":0},"02":{"d_n":34,"d_c":5,"c_n":34,"c_c":20},"03":{"d_n":73,"d_c":17,"c_n":105,"c_c":48},"04":{"d_n":48,"d_c":4,"c_n":88,"c_c":4},"05":{"d_n":12,"d_c":0,"c_n":18,"c_c":0}}},"NOVO HORIZONTE":{"total":{"dengue_not":142,"dengue_conf":22,"chik_not":264,"chik_conf":31,"hosp":5,"obitos":0},"months":{"01":{"d_n":8,"d_c":5,"c_n":0,"c_c":0},"02":{"d_n":13,"d_c":1,"c_n":13,"c_c":4},"03":{"d_n":43,"d_c":10,"c_n":69,"c_c":23},"04":{"d_n":64,"d_c":6,"c_n":146,"c_c":4},"05":{"d_n":13,"d_c":0,"c_n":34,"c_c":0}}},"SAO SEBASTIAO":{"total":{"dengue_not":169,"dengue_conf":16,"chik_not":211,"chik_conf":56,"hosp":4,"obitos":0},"months":{"01":{"d_n":7,"d_c":2,"c_n":1,"c_c":1},"02":{"d_n":25,"d_c":3,"c_n":21,"c_c":12},"03":{"d_n":74,"d_c":8,"c_n":76,"c_c":39},"04":{"d_n":44,"d_c":2,"c_n":76,"c_c":4},"05":{"d_n":17,"d_c":0,"c_n":37,"c_c":0}}},"SANTA HELENA":{"total":{"dengue_not":165,"dengue_conf":32,"chik_not":196,"chik_conf":74,"hosp":5,"obitos":0},"months":{"01":{"d_n":13,"d_c":9,"c_n":1,"c_c":0},"02":{"d_n":31,"d_c":6,"c_n":26,"c_c":20},"03":{"d_n":75,"d_c":14,"c_n":98,"c_c":47},"04":{"d_n":37,"d_c":3,"c_n":59,"c_c":7},"05":{"d_n":8,"d_c":0,"c_n":12,"c_c":0}}},"BELA SUICA":{"total":{"dengue_not":149,"dengue_conf":37,"chik_not":211,"chik_conf":50,"hosp":5,"obitos":0},"months":{"01":{"d_n":11,"d_c":7,"c_n":1,"c_c":0},"02":{"d_n":29,"d_c":6,"c_n":17,"c_c":10},"03":{"d_n":59,"d_c":18,"c_n":73,"c_c":33},"04":{"d_n":41,"d_c":6,"c_n":79,"c_c":7},"05":{"d_n":9,"d_c":0,"c_n":40,"c_c":0}}},"GOIAS":{"total":{"dengue_not":114,"dengue_conf":16,"chik_not":205,"chik_conf":46,"hosp":2,"obitos":0},"months":{"01":{"d_n":11,"d_c":7,"c_n":2,"c_c":2},"02":{"d_n":17,"d_c":0,"c_n":15,"c_c":5},"03":{"d_n":43,"d_c":7,"c_n":72,"c_c":35},"04":{"d_n":27,"d_c":2,"c_n":86,"c_c":4},"05":{"d_n":16,"d_c":0,"c_n":29,"c_c":0}}},"FATIMA":{"total":{"dengue_not":96,"dengue_conf":17,"chik_not":176,"chik_conf":49,"hosp":0,"obitos":0},"months":{"01":{"d_n":3,"d_c":0,"c_n":2,"c_c":0},"02":{"d_n":9,"d_c":3,"c_n":11,"c_c":5},"03":{"d_n":48,"d_c":11,"c_n":87,"c_c":41},"04":{"d_n":24,"d_c":1,"c_n":59,"c_c":3},"05":{"d_n":10,"d_c":0,"c_n":16,"c_c":0}}},"SAO JOAO":{"total":{"dengue_not":124,"dengue_conf":20,"chik_not":139,"chik_conf":54,"hosp":5,"obitos":0},"months":{"01":{"d_n":11,"d_c":5,"c_n":4,"c_c":1},"02":{"d_n":37,"d_c":6,"c_n":30,"c_c":21},"03":{"d_n":40,"d_c":8,"c_n":55,"c_c":30},"04":{"d_n":28,"d_c":1,"c_n":40,"c_c":2},"05":{"d_n":7,"d_c":0,"c_n":9,"c_c":0}}},"BOSQUE":{"total":{"dengue_not":86,"dengue_conf":14,"chik_not":137,"chik_conf":54,"hosp":1,"obitos":0},"months":{"01":{"d_n":9,"d_c":4,"c_n":2,"c_c":1},"02":{"d_n":18,"d_c":3,"c_n":12,"c_c":7},"03":{"d_n":34,"d_c":3,"c_n":67,"c_c":42},"04":{"d_n":21,"d_c":4,"c_n":41,"c_c":4},"05":{"d_n":4,"d_c":0,"c_n":15,"c_c":0}}},"MIRANDA":{"total":{"dengue_not":97,"dengue_conf":18,"chik_not":109,"chik_conf":18,"hosp":4,"obitos":0},"months":{"01":{"d_n":11,"d_c":7,"c_n":3,"c_c":2},"02":{"d_n":22,"d_c":3,"c_n":20,"c_c":6},"03":{"d_n":19,"d_c":3,"c_n":30,"c_c":9},"04":{"d_n":36,"d_c":5,"c_n":42,"c_c":1},"05":{"d_n":8,"d_c":0,"c_n":14,"c_c":0}}},"PARAISO":{"total":{"dengue_not":72,"dengue_conf":9,"chik_not":101,"chik_conf":12,"hosp":1,"obitos":0},"months":{"01":{"d_n":6,"d_c":2,"c_n":2,"c_c":1},"02":{"d_n":5,"d_c":0,"c_n":4,"c_c":1},"03":{"d_n":20,"d_c":6,"c_n":22,"c_c":7},"04":{"d_n":27,"d_c":1,"c_n":52,"c_c":3},"05":{"d_n":12,"d_c":0,"c_n":21,"c_c":0}}},"OURO VERDE":{"total":{"dengue_not":73,"dengue_conf":9,"chik_not":95,"chik_conf":25,"hosp":5,"obitos":1},"months":{"01":{"d_n":12,"d_c":3,"c_n":3,"c_c":1},"02":{"d_n":6,"d_c":0,"c_n":5,"c_c":2},"03":{"d_n":23,"d_c":2,"c_n":36,"c_c":18},"04":{"d_n":28,"d_c":4,"c_n":34,"c_c":4},"05":{"d_n":4,"d_c":0,"c_n":17,"c_c":0}}},"VIENO":{"total":{"dengue_not":80,"dengue_conf":15,"chik_not":85,"chik_conf":16,"hosp":4,"obitos":0},"months":{"01":{"d_n":6,"d_c":5,"c_n":0,"c_c":0},"02":{"d_n":7,"d_c":0,"c_n":3,"c_c":0},"03":{"d_n":30,"d_c":6,"c_n":35,"c_c":14},"04":{"d_n":32,"d_c":4,"c_n":29,"c_c":2},"05":{"d_n":4,"d_c":0,"c_n":18,"c_c":0}}},"PORTAL DOS IPES":{"total":{"dengue_not":96,"dengue_conf":19,"chik_not":63,"chik_conf":14,"hosp":0,"obitos":0},"months":{"01":{"d_n":7,"d_c":2,"c_n":0,"c_c":0},"02":{"d_n":15,"d_c":1,"c_n":11,"c_c":4},"03":{"d_n":32,"d_c":13,"c_n":19,"c_c":7},"04":{"d_n":36,"d_c":3,"c_n":24,"c_c":3},"05":{"d_n":6,"d_c":0,"c_n":9,"c_c":0}}},"MONTE MORIA":{"total":{"dengue_not":56,"dengue_conf":7,"chik_not":72,"chik_conf":16,"hosp":0,"obitos":0},"months":{"01":{"d_n":4,"d_c":3,"c_n":0,"c_c":0},"02":{"d_n":9,"d_c":0,"c_n":6,"c_c":2},"03":{"d_n":15,"d_c":1,"c_n":21,"c_c":9},"04":{"d_n":19,"d_c":2,"c_n":35,"c_c":5},"05":{"d_n":8,"d_c":0,"c_n":10,"c_c":0}}}};
+let bairroData = {};
+let dadosCarregados = false;
+
+// Tenta carregar dados da API (banco de dados)
+async function carregarDadosAPI() {
+  try {
+    const res = await fetch('/api/data');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.bairros && Object.keys(data.bairros).length > 0) {
+        bairroData = data.bairros;
+        dadosCarregados = true;
+        console.log('Dados carregados da API:', Object.keys(bairroData).length, 'bairros');
+        // Update KPIs with meta
+        if (data.meta) {
+          const d = data.meta.dengue || {notif:0};
+          const c = data.meta.chikungunya || {notif:0};
+          document.getElementById('kpi-total').textContent = ((d.notif||0)+(c.notif||0)).toLocaleString('pt-BR');
+          document.getElementById('kpi-dengue').textContent = (d.notif||0).toLocaleString('pt-BR');
+          document.getElementById('kpi-chik').textContent = (c.notif||0).toLocaleString('pt-BR');
+          document.getElementById('kpi-hosp').textContent = ((d.hosp||0)+(c.hosp||0)).toLocaleString('pt-BR');
+          document.getElementById('kpi-obito').textContent = ((d.obitos||0)+(c.obitos||0)).toLocaleString('pt-BR');
+        }
+        aplicarFiltros();
+        return;
+      }
+    }
+  } catch(e) { console.log('API indisponivel, usando dados estaticos'); }
+  // Fallback: dados estaticos originais permanecem
+  if (!dadosCarregados) aplicarFiltros();
+}
+
+// Dados estaticos como fallback (serao sobrescritos pela API se disponivel)
+bairroData = {"AMORIM":{"total":{"dengue_not":284,"dengue_conf":35,"chik_not":306,"chik_conf":126,"hosp":16,"obitos":0},"months":{"01":{"d_n":13,"d_c":7,"c_n":2,"c_c":1},"02":{"d_n":61,"d_c":7,"c_n":56,"c_c":43},"03":{"d_n":111,"d_c":14,"c_n":142,"c_c":77},"04":{"d_n":74,"d_c":6,"c_n":84,"c_c":5},"05":{"d_n":23,"d_c":0,"c_n":22,"c_c":0}}},"BRASILIA":{"total":{"dengue_not":261,"dengue_conf":30,"chik_not":310,"chik_conf":138,"hosp":3,"obitos":0},"months":{"01":{"d_n":15,"d_c":8,"c_n":5,"c_c":1},"02":{"d_n":72,"d_c":7,"c_n":66,"c_c":54},"03":{"d_n":93,"d_c":12,"c_n":118,"c_c":82},"04":{"d_n":63,"d_c":2,"c_n":95,"c_c":1},"05":{"d_n":17,"d_c":0,"c_n":25,"c_c":0}}}};
 
 // Coordenadas aproximadas dos bairros de Araguari-MG
 const bairroCoords = {
@@ -1844,8 +1877,8 @@ function aplicarFiltros() {
   });
 }
 
-// Initialize
-aplicarFiltros();
+// Initialize - dados serao carregados via carregarDadosAPI()
+// aplicarFiltros() chamado apos dados carregarem
 
 // Epidemic curve chart
 const curvaLabels = ["SE 01","SE 02","SE 03","SE 04","SE 05","SE 06","SE 07","SE 08","SE 09","SE 10","SE 11","SE 12","SE 13","SE 14","SE 15","SE 16","SE 17","SE 18","SE 19","SE 20"];
@@ -1992,6 +2025,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { bar.style.width = w; }, 300);
   });
 });
+
+// Carrega dados da API ao iniciar
+carregarDadosAPI();
 </script>
 </body>
 </html>
