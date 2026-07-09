@@ -1,9 +1,6 @@
 services:
   app:
     image: apsaraguari/painelgeral:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
     environment:
       - NODE_ENV=production
       - PORT=3000
