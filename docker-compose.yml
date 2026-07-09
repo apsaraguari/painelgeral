@@ -1,13 +1,8 @@
 services:
-
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: painel-araguari
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
@@ -15,23 +10,17 @@ services:
       - ADMIN_PASS=${ADMIN_PASS:-araguari2026}
       - JWT_SECRET=${JWT_SECRET:-mude-esta-chave-em-producao}
     volumes:
-      - data_volume:/app/data
-      - uploads_volume:/app/uploads
+      - painel-data:/app/data
+      - painel-uploads:/app/uploads
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/data"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
       interval: 30s
-      timeout: 10s
+      timeout: 5s
       retries: 3
       start_period: 10s
-    networks:
-      - painel_net
+    expose:
+      - "3000"
 
 volumes:
-  data_volume:
-    name: painel_araguari_data
-  uploads_volume:
-    name: painel_araguari_uploads
-
-networks:
-  painel_net:
-    name: painel_araguari_net
+  painel-data:
+  painel-uploads:

@@ -4,11 +4,7 @@
 node_modules/
 uploads/
 data/
-dev-data/
-dev-uploads/
-backups/
 *.db
 *.db-shm
 *.db-wal
 .env
-nginx/certs/
