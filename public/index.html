@@ -284,78 +284,121 @@ a { text-decoration: none; color: inherit; }
 
 /* VIGILANCIA EPIDEMIOLOGICA - MAPA E FILTROS */
 .ve-filters {
-  display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
-  margin-bottom: 20px; padding: 16px 20px;
-  background: #f7fafc; border-radius: 12px; border: 1px solid var(--border);
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+  margin-bottom: 24px; padding: 20px 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+  border-radius: 16px; border: 1px solid var(--border);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
 }
-.ve-filter-group { display: flex; flex-direction: column; gap: 4px; }
-.ve-filter-label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+.ve-filter-group { display: flex; flex-direction: column; gap: 5px; }
+.ve-filter-label { font-size: 10px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
 .ve-filter-select, .ve-filter-btn {
-  padding: 8px 14px; border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 16px; border: 1px solid var(--border); border-radius: 10px;
   font-size: 13px; font-family: 'Inter', sans-serif; background: white;
-  cursor: pointer; transition: all 0.2s;
+  cursor: pointer; transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-.ve-filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,122,74,0.1); }
+.ve-filter-select:hover { border-color: #cbd5e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.ve-filter-select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,122,74,0.12); }
 .ve-filter-btn { background: var(--primary); color: white; border-color: var(--primary); font-weight: 600; }
-.ve-filter-btn:hover { background: var(--primary-dark); }
+.ve-filter-btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,122,74,0.3); }
 .ve-filter-btn.secondary { background: white; color: var(--text); border-color: var(--border); }
 .ve-filter-btn.secondary.active { background: #f0faf5; color: var(--primary); border-color: var(--primary); }
 
 .ve-map-container {
-  position: relative; height: 520px; border-radius: 14px; overflow: hidden;
-  border: 1px solid var(--border); box-shadow: var(--shadow);
+  position: relative; height: 560px; border-radius: 16px; overflow: hidden;
+  border: none; box-shadow: 0 4px 24px rgba(0,0,0,0.1);
 }
 .ve-map-legend {
-  position: absolute; bottom: 16px; left: 16px; z-index: 1000;
-  background: white; border-radius: 10px; padding: 14px 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15); font-size: 12px;
-  max-width: 220px;
+  position: absolute; bottom: 20px; left: 20px; z-index: 1000;
+  background: rgba(255,255,255,0.97); border-radius: 14px; padding: 16px 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12); font-size: 12px;
+  max-width: 230px; backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.8);
 }
-.ve-legend-title { font-weight: 700; margin-bottom: 8px; color: var(--text); }
-.ve-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.ve-legend-color { width: 18px; height: 12px; border-radius: 3px; }
-.ve-legend-label { font-size: 11px; color: var(--text-light); }
+.ve-legend-title { font-weight: 800; margin-bottom: 10px; color: var(--text); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ve-legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.ve-legend-color { width: 20px; height: 10px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+.ve-legend-label { font-size: 11px; color: var(--text-light); font-weight: 500; }
 
-.ve-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 20px; }
+.ve-kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
 .ve-kpi-item {
-  background: white; border-radius: 12px; padding: 16px; text-align: center;
-  border: 1px solid var(--border); box-shadow: var(--shadow);
+  background: white; border-radius: 16px; padding: 20px 16px; text-align: center;
+  border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  transition: all 0.3s ease; position: relative; overflow: hidden;
 }
-.ve-kpi-item .value { font-size: 26px; font-weight: 800; line-height: 1.1; }
-.ve-kpi-item .label { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+.ve-kpi-item::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+}
+.ve-kpi-item.dengue::after { background: linear-gradient(90deg, #e74c3c, #c0392b); }
+.ve-kpi-item.chik::after { background: linear-gradient(90deg, #8e44ad, #6c3483); }
+.ve-kpi-item.total::after { background: linear-gradient(90deg, #e67e22, #d35400); }
+.ve-kpi-item.hosp::after { background: linear-gradient(90deg, #2980b9, #1a5276); }
+.ve-kpi-item.obito::after { background: linear-gradient(90deg, #c0392b, #922b21); }
+.ve-kpi-item:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.ve-kpi-item .value { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.ve-kpi-item .label { font-size: 10px; color: var(--text-light); margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 .ve-kpi-item.dengue .value { color: #e74c3c; }
 .ve-kpi-item.chik .value { color: #8e44ad; }
 .ve-kpi-item.total .value { color: #e67e22; }
 .ve-kpi-item.hosp .value { color: #2980b9; }
 .ve-kpi-item.obito .value { color: #c0392b; }
 
-.ve-ranking-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.ve-ranking-table th { background: #f7fafc; padding: 8px 10px; text-align: left; font-weight: 600; color: var(--text-light); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
-.ve-ranking-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.ve-ranking-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; }
+.ve-ranking-table th { background: linear-gradient(180deg, #f8fafc, #edf2f7); padding: 10px 12px; text-align: left; font-weight: 700; color: var(--text-light); font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 1; }
+.ve-ranking-table td { padding: 9px 12px; border-bottom: 1px solid #f0f4f8; transition: background 0.2s; }
 .ve-ranking-table tr:hover td { background: #f7fafc; }
-.ve-ranking-table .bar-cell { width: 120px; }
-.ve-inline-bar { height: 8px; border-radius: 4px; transition: width 0.5s; }
+.ve-ranking-table .bar-cell { width: 130px; }
+.ve-inline-bar { height: 10px; border-radius: 5px; transition: width 0.6s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+.ve-layer-toggle {
+  display: flex; gap: 16px; padding: 8px 22px 14px; flex-wrap: wrap; align-items: center;
+}
+.ve-layer-toggle label {
+  font-size: 12px; display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: white; transition: all 0.2s; font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.ve-layer-toggle label:hover { border-color: #cbd5e0; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.ve-layer-toggle input[type="checkbox"] { accent-color: var(--primary); width: 15px; height: 15px; }
 
 @media (max-width: 1200px) { .ve-kpi-row { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 768px) { .ve-kpi-row { grid-template-columns: repeat(2, 1fr); } }
 
 /* Custom Leaflet Tooltip */
 .custom-tooltip {
-  background: rgba(255,255,255,0.95) !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 6px !important;
-  padding: 4px 8px !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  background: rgba(255,255,255,0.97) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
   font-family: 'Inter', sans-serif !important;
   line-height: 1.4 !important;
+  backdrop-filter: blur(4px) !important;
 }
-.custom-tooltip::before { border: none !important; }
+.custom-tooltip::before { display: none !important; }
+.custom-tooltip.top-label {
+  background: rgba(26,32,44,0.92) !important;
+  color: #fff !important;
+  padding: 5px 12px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
+  font-size: 11px !important;
+}
+.custom-tooltip.top-label span { color: #fff !important; }
 .leaflet-popup-content-wrapper {
-  border-radius: 12px !important;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.18) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.2) !important;
+  border: none !important;
 }
-.leaflet-popup-content { margin: 12px 14px !important; }
-.leaflet-popup-tip { box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
+.leaflet-popup-content { margin: 14px 16px !important; }
+.leaflet-popup-tip { box-shadow: none !important; }
+.leaflet-popup-close-button {
+  top: 8px !important; right: 10px !important;
+  font-size: 18px !important; color: #a0aec0 !important;
+}
+.leaflet-popup-close-button:hover { color: #2d3748 !important; }
 </style>
 </head>
 <body>
@@ -883,14 +926,14 @@ a { text-decoration: none; color: inherit; }
   <div class="cards-row-2">
     <div class="card" style="padding:0;overflow:hidden">
       <div class="card-title" style="padding:18px 22px 0"><i class="fas fa-map-marked-alt"></i> Mapa de Calor por Bairro - Araguari-MG</div>
-      <div style="padding:4px 22px 10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+      <div class="ve-layer-toggle">
+        <label>
           <input type="checkbox" id="toggle-edls" checked onchange="toggleEDLs()">
-          <span style="display:inline-block;width:10px;height:10px;background:#E65100;border-radius:50%"></span> EDLs Pontos Estrategicos (59)
+          <span style="display:inline-block;width:12px;height:12px;background:#E65100;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #E65100"></span> EDLs Pontos Estrategicos (59)
         </label>
-        <label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer">
+        <label>
           <input type="checkbox" id="toggle-edls-res" checked onchange="toggleEDLsRes()">
-          <span style="display:inline-block;width:10px;height:10px;background:#0288D1;border-radius:50%"></span> EDLs Residenciais (319)
+          <span style="display:inline-block;width:12px;height:12px;background:#0288D1;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #0288D1"></span> EDLs Residenciais (319)
         </label>
       </div>
       <div class="ve-map-container" id="map-araguari">
@@ -1535,10 +1578,12 @@ const bairroCoords = {
 };
 
 // Inicializar mapa
-const map = L.map('map-araguari').setView([-18.648, -48.195], 13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap',
-  maxZoom: 18
+const map = L.map('map-araguari', {zoomControl: false}).setView([-18.648, -48.195], 13);
+L.control.zoom({position: 'topright'}).addTo(map);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap &copy; CARTO',
+  maxZoom: 18,
+  subdomains: 'abcd'
 }).addTo(map);
 
 let mapMarkers = [];
@@ -1732,46 +1777,50 @@ function aplicarFiltros() {
     // Rich popup
     const pctDengue = item.total > 0 ? Math.round(item.dengue / item.total * 100) : 0;
     const pctChik = item.total > 0 ? Math.round(item.chik / item.total * 100) : 0;
+    const rankBadge = idx < 3 ? `<span style="display:inline-block;background:${idx===0?'#e74c3c':idx===1?'#e67e22':'#f39c12'};color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:10px;margin-left:6px">#${idx+1}</span>` : '';
     circle.bindPopup(`
-      <div style="font-family:Inter,sans-serif;min-width:220px;padding:4px">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-          <div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid ${borderColor}"></div>
-          <strong style="font-size:15px;color:#2d3748">${item.bairro}</strong>
+      <div style="font-family:Inter,sans-serif;width:240px">
+        <div style="margin-bottom:12px">
+          <div style="font-size:16px;font-weight:800;color:#1a202c">${item.bairro}${rankBadge}</div>
+          <div style="font-size:10px;color:#a0aec0;margin-top:2px;text-transform:uppercase;letter-spacing:0.5px">Araguari - MG</div>
         </div>
-        <div style="background:#f7fafc;border-radius:8px;padding:10px;margin-bottom:8px">
-          <div style="font-size:22px;font-weight:800;color:#2d3748;text-align:center">${item.total}</div>
-          <div style="font-size:10px;color:#718096;text-align:center;text-transform:uppercase;letter-spacing:0.5px">notificacoes</div>
+        <div style="background:linear-gradient(135deg,#1a202c,#2d3748);border-radius:12px;padding:14px;margin-bottom:12px;text-align:center">
+          <div style="font-size:32px;font-weight:900;color:#fff;line-height:1">${item.total.toLocaleString('pt-BR')}</div>
+          <div style="font-size:9px;color:rgba(255,255,255,0.6);margin-top:4px;text-transform:uppercase;letter-spacing:1px">Notificacoes</div>
         </div>
-        <div style="display:flex;gap:8px;margin-bottom:8px">
-          <div style="flex:1;background:#fdedec;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:700;color:#e74c3c">${item.dengue}</div>
-            <div style="font-size:9px;color:#718096">DENGUE</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+          <div style="background:#fff5f5;border-radius:10px;padding:10px;text-align:center;border:1px solid #fed7d7">
+            <div style="font-size:18px;font-weight:800;color:#e53e3e">${item.dengue}</div>
+            <div style="font-size:9px;color:#9b2c2c;font-weight:600;margin-top:2px">DENGUE</div>
           </div>
-          <div style="flex:1;background:#f5eef8;border-radius:6px;padding:8px;text-align:center">
-            <div style="font-size:14px;font-weight:700;color:#8e44ad">${item.chik}</div>
-            <div style="font-size:9px;color:#718096">CHIK</div>
+          <div style="background:#faf5ff;border-radius:10px;padding:10px;text-align:center;border:1px solid #e9d8fd">
+            <div style="font-size:18px;font-weight:800;color:#805ad5">${item.chik}</div>
+            <div style="font-size:9px;color:#553c9a;font-weight:600;margin-top:2px">CHIKUNGUNYA</div>
           </div>
         </div>
-        <div style="height:6px;border-radius:3px;overflow:hidden;display:flex;background:#eee">
-          <div style="width:${pctDengue}%;background:#e74c3c"></div>
-          <div style="width:${pctChik}%;background:#8e44ad"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:#718096">
-          <span>Dengue ${pctDengue}%</span><span>Chik ${pctChik}%</span>
+        <div style="background:#f7fafc;border-radius:8px;padding:8px 10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:9px;font-weight:700;color:#e53e3e">${pctDengue}%</span>
+            <span style="font-size:9px;font-weight:700;color:#805ad5">${pctChik}%</span>
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;background:#e2e8f0">
+            <div style="width:${pctDengue}%;background:linear-gradient(90deg,#fc8181,#e53e3e);transition:width 0.3s"></div>
+            <div style="width:${pctChik}%;background:linear-gradient(90deg,#b794f4,#805ad5);transition:width 0.3s"></div>
+          </div>
         </div>
       </div>
-    `, {maxWidth: 260});
+    `, {maxWidth: 280, className: 'custom-popup'});
 
-    // Permanent label for top 10, tooltip for rest
-    if (idx < 10) {
-      circle.bindTooltip(`<span style="font-weight:700;font-size:11px">${item.bairro}</span><br><span style="font-size:10px;color:#555">${item.total} casos</span>`, {
+    // Permanent label for top 3 only, hover tooltip for rest
+    if (idx < 3) {
+      circle.bindTooltip(`<span style="font-weight:800;font-size:11px">${item.bairro}</span> <span style="font-size:11px;font-weight:700;color:${color}">${item.total.toLocaleString('pt-BR')}</span>`, {
         permanent: true,
-        direction: idx % 2 === 0 ? 'right' : 'left',
-        offset: [idx % 2 === 0 ? radius + 4 : -(radius + 4), 0],
-        className: 'custom-tooltip'
+        direction: 'right',
+        offset: [radius + 4, 0],
+        className: 'custom-tooltip top-label'
       });
     } else {
-      circle.bindTooltip(`${item.bairro}: ${item.total}`, {permanent: false, direction: 'top'});
+      circle.bindTooltip(`<strong>${item.bairro}</strong><br><span style="color:${color};font-weight:700">${item.total} casos</span>`, {permanent: false, direction: 'top', className: 'custom-tooltip'});
     }
 
     mapMarkers.push(circle);

@@ -1,2 +1,6 @@
 *.dbf
 *.DBF
+*.kmz
+node_modules/
+uploads/
+data/

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - Painel Vigilancia Araguari</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #1a7a4a;
+  --primary-dark: #145c38;
+  --bg: #0f172a;
+  --card: #1e293b;
+  --card-hover: #334155;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-dim: #94a3b8;
+  --accent: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+}
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* LOGIN */
+.login-container {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
+}
+.login-box {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.login-logo {
+  text-align: center; margin-bottom: 32px;
+}
+.login-logo i { font-size: 48px; color: var(--accent); }
+.login-logo h1 { font-size: 20px; margin-top: 12px; font-weight: 700; }
+.login-logo p { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-dim); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-input {
+  width: 100%; padding: 14px 16px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 14px; font-family: inherit;
+  transition: all 0.2s;
+}
+.form-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,197,94,0.15); }
+.btn {
+  width: 100%; padding: 14px; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: all 0.2s;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #16a34a; transform: translateY(-1px); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.login-error { color: var(--danger); font-size: 12px; text-align: center; margin-top: 12px; display: none; }
+
+/* ADMIN PANEL */
+.admin-container { display: none; }
+.admin-header {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.admin-header-left { display: flex; align-items: center; gap: 14px; }
+.admin-header-left i { font-size: 24px; color: var(--accent); }
+.admin-header-left h1 { font-size: 16px; font-weight: 700; }
+.admin-header-left span { font-size: 12px; color: var(--text-dim); }
+.admin-header-right { display: flex; align-items: center; gap: 12px; }
+.btn-sm { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; transition: all 0.2s; }
+.btn-sm:hover { background: var(--card-hover); }
+.btn-sm.danger { border-color: var(--danger); color: var(--danger); }
+.btn-sm.danger:hover { background: rgba(239,68,68,0.1); }
+
+.admin-content { padding: 32px; max-width: 1200px; margin: 0 auto; }
+
+.admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+@media (max-width: 768px) { .admin-grid { grid-template-columns: 1fr; } }
+
+.admin-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; transition: all 0.2s;
+}
+.admin-card:hover { border-color: var(--accent); }
+.admin-card h2 { font-size: 15px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.admin-card h2 i { color: var(--accent); }
+
+/* UPLOAD ZONE */
+.upload-zone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 40px 20px; text-align: center; cursor: pointer;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(34,197,94,0.05); }
+.upload-zone i { font-size: 36px; color: var(--text-dim); margin-bottom: 12px; }
+.upload-zone p { font-size: 13px; color: var(--text-dim); }
+.upload-zone .formats { font-size: 11px; color: var(--text-dim); margin-top: 8px; opacity: 0.7; }
+.upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.upload-category { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.cat-btn {
+  padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: transparent; color: var(--text-dim);
+  cursor: pointer; transition: all 0.2s;
+}
+.cat-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* STATUS */
+.status-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.status-item:last-child { border-bottom: none; }
+.status-label { font-size: 13px; color: var(--text-dim); }
+.status-value { font-size: 13px; font-weight: 600; }
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.status-badge.success { background: rgba(34,197,94,0.15); color: var(--accent); }
+.status-badge.warning { background: rgba(245,158,11,0.15); color: var(--warning); }
+.status-badge.error { background: rgba(239,68,68,0.15); color: var(--danger); }
+
+/* FILE LIST */
+.file-list { max-height: 300px; overflow-y: auto; }
+.file-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 8px; margin-bottom: 4px;
+  transition: background 0.2s;
+}
+.file-item:hover { background: var(--card-hover); }
+.file-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.file-icon.dbf { background: rgba(59,130,246,0.15); color: var(--info); }
+.file-icon.kmz { background: rgba(245,158,11,0.15); color: var(--warning); }
+.file-info { flex: 1; }
+.file-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 250px; }
+.file-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.file-delete { width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; color: var(--text-dim); cursor: pointer; font-size: 12px; }
+.file-delete:hover { background: rgba(239,68,68,0.1); color: var(--danger); }
+
+/* PROGRESS */
+.upload-progress { display: none; margin-top: 16px; }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; width: 0%; }
+.progress-text { font-size: 11px; color: var(--text-dim); margin-top: 6px; text-align: center; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4); transform: translateY(100px); opacity: 0;
+  transition: all 0.3s;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { border-left: 4px solid var(--accent); }
+.toast.error { border-left: 4px solid var(--danger); }
+.toast-msg { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-container" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <i class="fas fa-shield-virus"></i>
+      <h1>Painel Administrativo</h1>
+      <p>Vigilancia Epidemiologica - Araguari/MG</p>
+    </div>
+    <form onsubmit="doLogin(event)">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" class="form-input" id="login-user" placeholder="admin" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" class="form-input" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-sign-in-alt"></i> Entrar
+      </button>
+      <div class="login-error" id="login-error">Credenciais invalidas</div>
+    </form>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="admin-container" id="admin-panel">
+  <header class="admin-header">
+    <div class="admin-header-left">
+      <i class="fas fa-shield-virus"></i>
+      <div>
+        <h1>Painel Admin</h1>
+        <span>Vigilancia Epidemiologica</span>
+      </div>
+    </div>
+    <div class="admin-header-right">
+      <a href="/" class="btn-sm"><i class="fas fa-chart-bar"></i> Ver Dashboard</a>
+      <button class="btn-sm danger" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+    </div>
+  </header>
+
+  <div class="admin-content">
+    <!-- Upload Section -->
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h2><i class="fas fa-cloud-upload-alt"></i> Upload de Dados</h2>
+        <div class="upload-category">
+          <button class="cat-btn active" data-cat="dengue" onclick="setCategory(this)">Dengue (.dbf)</button>
+          <button class="cat-btn" data-cat="chikungunya" onclick="setCategory(this)">Chikungunya (.dbf)</button>
+          <button class="cat-btn" data-cat="pe" onclick="setCategory(this)">EDL PE (.kmz)</button>
+          <button class="cat-btn" data-cat="residencial" onclick="setCategory(this)">EDL Residencial (.kmz)</button>
+        </div>
+        <div class="upload-zone" id="upload-zone">
+          <i class="fas fa-file-upload"></i>
+          <p>Arraste um arquivo ou clique para selecionar</p>
+          <div class="formats">Formatos: .dbf (SINAN) ou .kmz (Google Maps)</div>
+          <input type="file" id="file-input" accept=".dbf,.kmz" onchange="handleFileSelect(event)">
+        </div>
+        <div class="upload-progress" id="upload-progress">
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-text" id="progress-text">Processando...</div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h2><i class="fas fa-database"></i> Status dos Dados</h2>
+        <div id="status-container">
+          <div class="status-item">
+            <span class="status-label">Ultima atualizacao</span>
+            <span class="status-value" id="last-update">--</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Dengue (notificacoes)</span>
+            <span class="status-value" id="stat-dengue">--</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Chikungunya (notificacoes)</span>
+            <span class="status-value" id="stat-chik">--</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">EDLs no mapa</span>
+            <span class="status-value" id="stat-edls">--</span>
+          </div>
+          <div class="status-item">
+            <span class="status-label">Status</span>
+            <span class="status-badge success" id="stat-status"><i class="fas fa-circle" style="font-size:6px"></i> Online</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File History -->
+    <div class="admin-card">
+      <h2><i class="fas fa-history"></i> Historico de Uploads</h2>
+      <div class="file-list" id="file-list">
+        <p style="color:var(--text-dim);font-size:13px;padding:20px;text-align:center">Carregando...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span class="toast-msg" id="toast-msg"></span></div>
+
+<script>
+let currentCategory = 'dengue';
+
+// Check if already logged in
+async function checkAuth() {
+  try {
+    const res = await fetch('/api/me');
+    if (res.ok) {
+      showAdmin();
+      loadStatus();
+    }
+  } catch {}
+}
+
+async function doLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('login-user').value;
+  const password = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    if (res.ok) {
+      showAdmin();
+      loadStatus();
+    } else {
+      errEl.style.display = 'block';
+    }
+  } catch {
+    errEl.textContent = 'Erro de conexao';
+    errEl.style.display = 'block';
+  }
+}
+
+async function doLogout() {
+  await fetch('/api/logout', { method: 'POST' });
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-panel').style.display = 'none';
+}
+
+function showAdmin() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+}
+
+function setCategory(btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCategory = btn.dataset.cat;
+}
+
+async function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  await uploadFile(file);
+}
+
+async function uploadFile(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('category', currentCategory);
+
+  const progressEl = document.getElementById('upload-progress');
+  const fillEl = document.getElementById('progress-fill');
+  const textEl = document.getElementById('progress-text');
+
+  progressEl.style.display = 'block';
+  fillEl.style.width = '30%';
+  textEl.textContent = `Enviando ${file.name}...`;
+
+  try {
+    fillEl.style.width = '60%';
+    textEl.textContent = 'Processando dados...';
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      fillEl.style.width = '100%';
+      textEl.textContent = data.message;
+      showToast(data.message, 'success');
+      loadStatus();
+    } else {
+      textEl.textContent = data.error;
+      showToast(data.error, 'error');
+    }
+  } catch (err) {
+    textEl.textContent = 'Erro no upload';
+    showToast('Erro no upload: ' + err.message, 'error');
+  }
+
+  setTimeout(() => { progressEl.style.display = 'none'; fillEl.style.width = '0%'; }, 3000);
+  document.getElementById('file-input').value = '';
+}
+
+async function loadStatus() {
+  try {
+    const res = await fetch('/api/status');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    document.getElementById('last-update').textContent = data.lastUpdate
+      ? new Date(data.lastUpdate).toLocaleString('pt-BR')
+      : 'Nunca';
+
+    const dengue = data.stats.dengue;
+    const chik = data.stats.chikungunya;
+    document.getElementById('stat-dengue').textContent = dengue ? `${dengue.notif.toLocaleString('pt-BR')}` : '--';
+    document.getElementById('stat-chik').textContent = chik ? `${chik.notif.toLocaleString('pt-BR')}` : '--';
+
+    // File list
+    const listEl = document.getElementById('file-list');
+    if (data.uploads && data.uploads.length > 0) {
+      listEl.innerHTML = data.uploads.map(f => {
+        const ext = f.name.split('.').pop().toLowerCase();
+        const iconClass = ext === 'dbf' ? 'dbf' : 'kmz';
+        const size = (f.size / 1024 / 1024).toFixed(1);
+        const date = new Date(f.date).toLocaleString('pt-BR');
+        return `
+          <div class="file-item">
+            <div class="file-icon ${iconClass}"><i class="fas fa-file"></i></div>
+            <div class="file-info">
+              <div class="file-name">${f.name}</div>
+              <div class="file-meta">${size} MB - ${date}</div>
+            </div>
+            <button class="file-delete" onclick="deleteFile('${f.name}')"><i class="fas fa-trash"></i></button>
+          </div>
+        `;
+      }).join('');
+    } else {
+      listEl.innerHTML = '<p style="color:var(--text-dim);font-size:13px;padding:20px;text-align:center">Nenhum arquivo enviado</p>';
+    }
+  } catch {}
+}
+
+async function deleteFile(filename) {
+  if (!confirm('Excluir este arquivo?')) return;
+  try {
+    await fetch(`/api/upload/${filename}`, { method: 'DELETE' });
+    showToast('Arquivo excluido', 'success');
+    loadStatus();
+  } catch {}
+}
+
+function showToast(msg, type) {
+  const toast = document.getElementById('toast');
+  const msgEl = document.getElementById('toast-msg');
+  toast.className = `toast ${type} show`;
+  msgEl.textContent = msg;
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// Drag & Drop
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) uploadFile(e.dataTransfer.files[0]);
+});
+
+// Init
+checkAuth();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+node_modules
+uploads
+data
+*.dbf
+*.DBF
+*.kmz
+.git
+.vscode
