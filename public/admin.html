@@ -386,27 +386,31 @@ async function loadStatus() {
       ? new Date(data.lastUpdate).toLocaleString('pt-BR')
       : 'Nunca';
 
-    const dengue = data.stats.dengue;
-    const chik = data.stats.chikungunya;
-    document.getElementById('stat-dengue').textContent = dengue ? `${dengue.notif.toLocaleString('pt-BR')}` : '--';
-    document.getElementById('stat-chik').textContent = chik ? `${chik.notif.toLocaleString('pt-BR')}` : '--';
+    document.getElementById('stat-dengue').textContent = data.dengue ? data.dengue.toLocaleString('pt-BR') : '0';
+    document.getElementById('stat-chik').textContent = data.chikungunya ? data.chikungunya.toLocaleString('pt-BR') : '0';
+    document.getElementById('stat-edls').textContent = `${(data.edl_pe || 0)} PE + ${(data.edl_residencial || 0)} Res`;
 
     // File list
     const listEl = document.getElementById('file-list');
     if (data.uploads && data.uploads.length > 0) {
       listEl.innerHTML = data.uploads.map(f => {
-        const ext = f.name.split('.').pop().toLowerCase();
+        const ext = f.original_name ? f.original_name.split('.').pop().toLowerCase() : 'dbf';
         const iconClass = ext === 'dbf' ? 'dbf' : 'kmz';
-        const size = (f.size / 1024 / 1024).toFixed(1);
-        const date = new Date(f.date).toLocaleString('pt-BR');
+        const size = (f.tamanho / 1024 / 1024).toFixed(1);
+        const date = new Date(f.criado_em).toLocaleString('pt-BR');
+        const statusBadge = f.status === 'concluido'
+          ? '<span class="status-badge success"><i class="fas fa-check"></i></span>'
+          : f.status === 'erro'
+          ? '<span class="status-badge error"><i class="fas fa-times"></i></span>'
+          : '<span class="status-badge warning"><i class="fas fa-spinner"></i></span>';
         return `
           <div class="file-item">
             <div class="file-icon ${iconClass}"><i class="fas fa-file"></i></div>
             <div class="file-info">
-              <div class="file-name">${f.name}</div>
-              <div class="file-meta">${size} MB - ${date}</div>
+              <div class="file-name">${f.original_name || f.filename}</div>
+              <div class="file-meta">${size} MB - ${f.categoria} - ${f.registros_processados} reg - ${date} ${statusBadge}</div>
             </div>
-            <button class="file-delete" onclick="deleteFile('${f.name}')"><i class="fas fa-trash"></i></button>
+            <button class="file-delete" onclick="deleteFile(${f.id})"><i class="fas fa-trash"></i></button>
           </div>
         `;
       }).join('');
@@ -416,11 +420,11 @@ async function loadStatus() {
   } catch {}
 }
 
-async function deleteFile(filename) {
-  if (!confirm('Excluir este arquivo?')) return;
+async function deleteFile(id) {
+  if (!confirm('Excluir este registro de upload?')) return;
   try {
-    await fetch(`/api/upload/${filename}`, { method: 'DELETE' });
-    showToast('Arquivo excluido', 'success');
+    await fetch(`/api/upload/${id}`, { method: 'DELETE' });
+    showToast('Registro excluido', 'success');
     loadStatus();
   } catch {}
 }

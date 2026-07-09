@@ -4,3 +4,6 @@
 node_modules/
 uploads/
 data/
+*.db
+*.db-shm
+*.db-wal
