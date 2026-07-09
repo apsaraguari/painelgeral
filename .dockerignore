@@ -1,8 +1,16 @@
 node_modules
 uploads
 data
+dev-data
+dev-uploads
+backups
 *.dbf
 *.DBF
 *.kmz
+*.db
+*.db-shm
+*.db-wal
 .git
 .vscode
+.env
+nginx/certs

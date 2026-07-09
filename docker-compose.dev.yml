@@ -1,0 +1,30 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: painel-araguari-dev
+    restart: no
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - ADMIN_USER=admin
+      - ADMIN_PASS=admin123
+      - JWT_SECRET=dev-secret-key
+    volumes:
+      # Monta codigo local para desenvolvimento
+      - ./server.js:/app/server.js
+      - ./database.js:/app/database.js
+      - ./public:/app/public
+      # Persiste dados entre restarts
+      - ./dev-data:/app/data
+      - ./dev-uploads:/app/uploads
+    networks:
+      - painel_net
+
+networks:
+  painel_net:
+    name: painel_araguari_dev_net
