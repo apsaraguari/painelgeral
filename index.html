@@ -338,6 +338,24 @@ a { text-decoration: none; color: inherit; }
 
 @media (max-width: 1200px) { .ve-kpi-row { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 768px) { .ve-kpi-row { grid-template-columns: repeat(2, 1fr); } }
+
+/* Custom Leaflet Tooltip */
+.custom-tooltip {
+  background: rgba(255,255,255,0.95) !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 6px !important;
+  padding: 4px 8px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12) !important;
+  font-family: 'Inter', sans-serif !important;
+  line-height: 1.4 !important;
+}
+.custom-tooltip::before { border: none !important; }
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.18) !important;
+}
+.leaflet-popup-content { margin: 12px 14px !important; }
+.leaflet-popup-tip { box-shadow: 0 4px 10px rgba(0,0,0,0.1) !important; }
 </style>
 </head>
 <body>
@@ -878,11 +896,11 @@ a { text-decoration: none; color: inherit; }
       <div class="ve-map-container" id="map-araguari">
         <div class="ve-map-legend" id="map-legend">
           <div class="ve-legend-title">Notificacoes por Bairro</div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fee5d9"></div><span class="ve-legend-label">1 - 50</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fcae91"></div><span class="ve-legend-label">51 - 150</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fb6a4a"></div><span class="ve-legend-label">151 - 300</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#de2d26"></div><span class="ve-legend-label">301 - 450</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#a50f15"></div><span class="ve-legend-label">&gt; 450</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fcbba1"></div><span class="ve-legend-label">1 - 50</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fb6a4a"></div><span class="ve-legend-label">51 - 150</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#de2d26"></div><span class="ve-legend-label">151 - 300</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#a50f15"></div><span class="ve-legend-label">301 - 450</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#67000d"></div><span class="ve-legend-label">&gt; 450</span></div>
           <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
             <div class="ve-legend-item"><div style="width:10px;height:10px;background:#E65100;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Ponto Estrategico</span></div>
             <div class="ve-legend-item"><div style="width:10px;height:10px;background:#0288D1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Residencial</span></div>
@@ -1602,19 +1620,22 @@ function toggleEDLsRes() {
 criarEDLResMarkers();
 
 function getColor(value) {
-  return value > 450 ? '#a50f15' :
-         value > 300 ? '#de2d26' :
-         value > 150 ? '#fb6a4a' :
-         value > 50  ? '#fcae91' :
-                       '#fee5d9';
+  return value > 450 ? '#67000d' :
+         value > 300 ? '#a50f15' :
+         value > 150 ? '#de2d26' :
+         value > 50  ? '#fb6a4a' :
+                       '#fcbba1';
 }
 
 function getRadius(value) {
-  return value > 450 ? 32 :
-         value > 300 ? 27 :
-         value > 150 ? 22 :
-         value > 50  ? 17 :
-                       12;
+  return Math.max(10, Math.min(40, 8 + Math.sqrt(value) * 1.5));
+}
+
+function getBorderColor(value) {
+  return value > 300 ? '#67000d' :
+         value > 150 ? '#a50f15' :
+         value > 50  ? '#de2d26' :
+                       '#fb6a4a';
 }
 
 function aplicarFiltros() {
@@ -1680,28 +1701,79 @@ function aplicarFiltros() {
     const coords = bairroCoords[item.bairro];
     if (!coords || item.total === 0) return;
 
+    const radius = getRadius(item.total);
+    const color = getColor(item.total);
+    const borderColor = getBorderColor(item.total);
+    const pctOfMax = maxVal > 0 ? (item.total / maxVal) : 0;
+
+    // Outer glow ring for top 5
+    if (idx < 5) {
+      const glow = L.circleMarker(coords, {
+        radius: radius + 6,
+        fillColor: color,
+        color: 'transparent',
+        fillOpacity: 0.15,
+        weight: 0,
+        interactive: false
+      }).addTo(map);
+      mapMarkers.push(glow);
+    }
+
+    // Main circle
     const circle = L.circleMarker(coords, {
-      radius: getRadius(item.total),
-      fillColor: getColor(item.total),
-      color: '#fff',
-      weight: 2,
+      radius: radius,
+      fillColor: color,
+      color: borderColor,
+      weight: idx < 3 ? 3 : 2,
       opacity: 1,
-      fillOpacity: 0.8
+      fillOpacity: 0.75
     }).addTo(map);
 
+    // Rich popup
+    const pctDengue = item.total > 0 ? Math.round(item.dengue / item.total * 100) : 0;
+    const pctChik = item.total > 0 ? Math.round(item.chik / item.total * 100) : 0;
     circle.bindPopup(`
-      <div style="font-family:Inter,sans-serif;min-width:180px">
-        <strong style="font-size:14px">${item.bairro}</strong>
-        <hr style="margin:6px 0;border:none;border-top:1px solid #eee">
-        <div style="font-size:12px;line-height:1.8">
-          <span style="color:#e74c3c">&#9679;</span> Dengue: <strong>${item.dengue}</strong><br>
-          <span style="color:#8e44ad">&#9679;</span> Chikungunya: <strong>${item.chik}</strong><br>
-          <strong>Total: ${item.total}</strong>
+      <div style="font-family:Inter,sans-serif;min-width:220px;padding:4px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid ${borderColor}"></div>
+          <strong style="font-size:15px;color:#2d3748">${item.bairro}</strong>
+        </div>
+        <div style="background:#f7fafc;border-radius:8px;padding:10px;margin-bottom:8px">
+          <div style="font-size:22px;font-weight:800;color:#2d3748;text-align:center">${item.total}</div>
+          <div style="font-size:10px;color:#718096;text-align:center;text-transform:uppercase;letter-spacing:0.5px">notificacoes</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <div style="flex:1;background:#fdedec;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:700;color:#e74c3c">${item.dengue}</div>
+            <div style="font-size:9px;color:#718096">DENGUE</div>
+          </div>
+          <div style="flex:1;background:#f5eef8;border-radius:6px;padding:8px;text-align:center">
+            <div style="font-size:14px;font-weight:700;color:#8e44ad">${item.chik}</div>
+            <div style="font-size:9px;color:#718096">CHIK</div>
+          </div>
+        </div>
+        <div style="height:6px;border-radius:3px;overflow:hidden;display:flex;background:#eee">
+          <div style="width:${pctDengue}%;background:#e74c3c"></div>
+          <div style="width:${pctChik}%;background:#8e44ad"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:#718096">
+          <span>Dengue ${pctDengue}%</span><span>Chik ${pctChik}%</span>
         </div>
       </div>
-    `);
+    `, {maxWidth: 260});
 
-    circle.bindTooltip(item.bairro, {permanent: false, direction: 'top', className: 'leaflet-tooltip'});
+    // Permanent label for top 10, tooltip for rest
+    if (idx < 10) {
+      circle.bindTooltip(`<span style="font-weight:700;font-size:11px">${item.bairro}</span><br><span style="font-size:10px;color:#555">${item.total} casos</span>`, {
+        permanent: true,
+        direction: idx % 2 === 0 ? 'right' : 'left',
+        offset: [idx % 2 === 0 ? radius + 4 : -(radius + 4), 0],
+        className: 'custom-tooltip'
+      });
+    } else {
+      circle.bindTooltip(`${item.bairro}: ${item.total}`, {permanent: false, direction: 'top'});
+    }
+
     mapMarkers.push(circle);
   });
 
