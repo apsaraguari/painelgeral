@@ -238,6 +238,46 @@ async function processKMZ(filePath, category, originalName) {
     points.push({ name, address, lat, lon, bairro: '' });
   }
 
+  // Geocodificar pontos sem coordenadas
+  const https = require('https');
+  const streetCache = {};
+
+  for (let i = 0; i < points.length; i++) {
+    const pt = points[i];
+    if (pt.lat && pt.lon) continue;
+
+    // Extrair nome da rua (sem numero)
+    const street = pt.name.split(',')[0].trim();
+    
+    // Usar cache para mesma rua
+    if (streetCache[street]) {
+      const base = streetCache[street];
+      // Pequeno offset para nao sobrepor
+      pt.lat = base.lat + (Math.random() - 0.5) * 0.002;
+      pt.lon = base.lon + (Math.random() - 0.5) * 0.002;
+      continue;
+    }
+
+    // Geocodificar via Nominatim
+    try {
+      const coords = await geocodeAddress(street + ', Araguari, MG, Brazil', https);
+      if (coords) {
+        pt.lat = coords.lat;
+        pt.lon = coords.lon;
+        streetCache[street] = coords;
+      } else {
+        // Fallback: posicao central de Araguari com offset
+        pt.lat = -18.648 + (Math.random() - 0.5) * 0.03;
+        pt.lon = -48.195 + (Math.random() - 0.5) * 0.03;
+      }
+      // Rate limit: 1 req/sec para Nominatim
+      await new Promise(r => setTimeout(r, 1100));
+    } catch (e) {
+      pt.lat = -18.648 + (Math.random() - 0.5) * 0.03;
+      pt.lon = -48.195 + (Math.random() - 0.5) * 0.03;
+    }
+  }
+
   const count = importarEdls(points, category, originalName);
 
   return {
@@ -245,6 +285,28 @@ async function processKMZ(filePath, category, originalName) {
     message: `KMZ (${category}): ${count} pontos importados no banco`,
     stats: { points: count, withCoords: points.filter(p => p.lat).length }
   };
+}
+
+function geocodeAddress(query, https) {
+  return new Promise((resolve, reject) => {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+    const options = { headers: { 'User-Agent': 'PainelVigilanciaAraguari/1.0' } };
+    
+    https.get(url, options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const results = JSON.parse(data);
+          if (results && results.length > 0) {
+            resolve({ lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon) });
+          } else {
+            resolve(null);
+          }
+        } catch { resolve(null); }
+      });
+    }).on('error', () => resolve(null));
+  });
 }
 
 // Serve admin panel
