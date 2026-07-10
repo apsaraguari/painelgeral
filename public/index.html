@@ -926,14 +926,14 @@ a { text-decoration: none; color: inherit; }
   <div class="cards-row-2">
     <div class="card" style="padding:0;overflow:hidden">
       <div class="card-title" style="padding:18px 22px 0"><i class="fas fa-map-marked-alt"></i> Mapa de Calor por Bairro - Araguari-MG</div>
-      <div class="ve-layer-toggle">
-        <label>
+      <div class="ve-layer-toggle" id="edl-toggles" style="display:none">
+        <label id="label-edl-pe" style="display:none">
           <input type="checkbox" id="toggle-edls" checked onchange="toggleEDLs()">
-          <span style="display:inline-block;width:12px;height:12px;background:#E65100;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #E65100"></span> EDLs Pontos Estrategicos (59)
+          <span style="display:inline-block;width:12px;height:12px;background:#E65100;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #E65100"></span> <span id="edl-pe-label">EDLs Pontos Estrategicos</span>
         </label>
-        <label>
+        <label id="label-edl-res" style="display:none">
           <input type="checkbox" id="toggle-edls-res" checked onchange="toggleEDLsRes()">
-          <span style="display:inline-block;width:12px;height:12px;background:#0288D1;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #0288D1"></span> EDLs Residenciais (319)
+          <span style="display:inline-block;width:12px;height:12px;background:#0288D1;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #0288D1"></span> <span id="edl-res-label">EDLs Residenciais</span>
         </label>
       </div>
       <div class="ve-map-container" id="map-araguari">
@@ -1606,8 +1606,19 @@ async function carregarDadosAPI() {
             }
           });
 
-          criarEDLMarkers();
-          criarEDLResMarkers();
+          // Show toggles and update labels
+          if (edlPEPoints.length > 0) {
+            document.getElementById('edl-toggles').style.display = '';
+            document.getElementById('label-edl-pe').style.display = '';
+            document.getElementById('edl-pe-label').textContent = `EDLs Pontos Estrategicos (${edlPEPoints.length})`;
+            criarEDLMarkers();
+          }
+          if (edlResPoints.length > 0) {
+            document.getElementById('edl-toggles').style.display = '';
+            document.getElementById('label-edl-res').style.display = '';
+            document.getElementById('edl-res-label').textContent = `EDLs Residenciais (${edlResPoints.length})`;
+            criarEDLResMarkers();
+          }
         }
 
         aplicarFiltros();
@@ -1726,9 +1737,9 @@ function toggleEDLs() {
   });
 }
 
-criarEDLMarkers();
+// EDLs serao criados apos carregamento via API
 
-// EDLs Residenciais (319 pontos - cor azul)
+// EDLs Residenciais (cor azul)
 let edlResPoints = [];
 
 let edlResMarkers = [];
@@ -1767,7 +1778,7 @@ function toggleEDLsRes() {
   });
 }
 
-criarEDLResMarkers();
+// EDLs Residenciais serao criados apos carregamento via API
 
 function getColor(value) {
   return value > 450 ? '#67000d' :
