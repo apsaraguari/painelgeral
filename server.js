@@ -210,22 +210,18 @@ async function processKMZ(filePath, category, originalName) {
 
   if (!kmlContent) throw new Error('Nenhum arquivo KML encontrado no KMZ');
 
-  // Simple XML parsing for placemarks
   const points = [];
   const placemarkRegex = /<Placemark>([\s\S]*?)<\/Placemark>/g;
   const nameRegex = /<name>([\s\S]*?)<\/name>/;
-  const addressRegex = /<address>([\s\S]*?)<\/address>/;
   const coordsRegex = /<coordinates>([\s\S]*?)<\/coordinates>/;
 
   let match;
   while ((match = placemarkRegex.exec(kmlContent)) !== null) {
     const content = match[1];
     const nameMatch = nameRegex.exec(content);
-    const addrMatch = addressRegex.exec(content);
     const coordMatch = coordsRegex.exec(content);
 
     const name = nameMatch ? nameMatch[1].trim() : '';
-    const address = addrMatch ? addrMatch[1].trim() : '';
     let lat = null, lon = null;
     if (coordMatch) {
       const parts = coordMatch[1].trim().split(',');
@@ -235,78 +231,109 @@ async function processKMZ(filePath, category, originalName) {
       }
     }
 
-    points.push({ name, address, lat, lon, bairro: '' });
-  }
-
-  // Geocodificar pontos sem coordenadas
-  const https = require('https');
-  const streetCache = {};
-
-  for (let i = 0; i < points.length; i++) {
-    const pt = points[i];
-    if (pt.lat && pt.lon) continue;
-
-    // Extrair nome da rua (sem numero)
-    const street = pt.name.split(',')[0].trim();
-    
-    // Usar cache para mesma rua
-    if (streetCache[street]) {
-      const base = streetCache[street];
-      // Pequeno offset para nao sobrepor
-      pt.lat = base.lat + (Math.random() - 0.5) * 0.002;
-      pt.lon = base.lon + (Math.random() - 0.5) * 0.002;
-      continue;
+    // Se nao tem coordenadas, gerar baseado no bairro
+    if (!lat || !lon) {
+      const coords = geocodificarLocal(name);
+      lat = coords.lat;
+      lon = coords.lon;
     }
 
-    // Geocodificar via Nominatim
-    try {
-      const coords = await geocodeAddress(street + ', Araguari, MG, Brazil', https);
-      if (coords) {
-        pt.lat = coords.lat;
-        pt.lon = coords.lon;
-        streetCache[street] = coords;
-      } else {
-        // Fallback: posicao central de Araguari com offset
-        pt.lat = -18.648 + (Math.random() - 0.5) * 0.03;
-        pt.lon = -48.195 + (Math.random() - 0.5) * 0.03;
-      }
-      // Rate limit: 1 req/sec para Nominatim
-      await new Promise(r => setTimeout(r, 1100));
-    } catch (e) {
-      pt.lat = -18.648 + (Math.random() - 0.5) * 0.03;
-      pt.lon = -48.195 + (Math.random() - 0.5) * 0.03;
-    }
+    const bairro = extrairBairroNome(name);
+    points.push({ name, address: name, lat, lon, bairro });
   }
 
   const count = importarEdls(points, category, originalName);
 
   return {
     count,
-    message: `KMZ (${category}): ${count} pontos importados no banco`,
+    message: `KMZ (${category}): ${count} pontos importados`,
     stats: { points: count, withCoords: points.filter(p => p.lat).length }
   };
 }
 
-function geocodeAddress(query, https) {
-  return new Promise((resolve, reject) => {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-    const options = { headers: { 'User-Agent': 'PainelVigilanciaAraguari/1.0' } };
-    
-    https.get(url, options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        try {
-          const results = JSON.parse(data);
-          if (results && results.length > 0) {
-            resolve({ lat: parseFloat(results[0].lat), lon: parseFloat(results[0].lon) });
-          } else {
-            resolve(null);
-          }
-        } catch { resolve(null); }
-      });
-    }).on('error', () => resolve(null));
-  });
+// Coordenadas conhecidas de bairros de Araguari
+const BAIRRO_COORDS = {
+  'aeroporto': [-18.6680, -48.1850], 'amorim': [-18.6350, -48.1950],
+  'bosque': [-18.6360, -48.1730], 'brasilia': [-18.6520, -48.2050],
+  'brasília': [-18.6520, -48.2050], 'centro': [-18.6470, -48.1900],
+  'goias': [-18.6500, -48.1830], 'goiás': [-18.6500, -48.1830],
+  'goiás parte alta': [-18.6510, -48.1800], 'independencia': [-18.6400, -48.1850],
+  'independência': [-18.6400, -48.1850], 'industrial': [-18.6700, -48.1750],
+  'distrito industrial': [-18.6720, -48.1780], 'maria eugenia': [-18.6580, -48.1820],
+  'maria eugênia': [-18.6580, -48.1820], 'miranda': [-18.6530, -48.1780],
+  'novo horizonte': [-18.6600, -48.2000], 'ouro verde': [-18.6620, -48.2080],
+  'paraiso': [-18.6480, -48.1750], 'paraíso': [-18.6480, -48.1750],
+  'santa helena': [-18.6380, -48.1780], 'santiago': [-18.6390, -48.2050],
+  'sao sebastiao': [-18.6420, -48.1980], 'são sebastião': [-18.6420, -48.1980],
+  'sibipiruna': [-18.6310, -48.1800], 'vieno': [-18.6570, -48.1700],
+  'alan kardec': [-18.6410, -48.2080], 'joquei clube': [-18.6450, -48.1700],
+  'jóquei clube': [-18.6450, -48.1700], 'fatima': [-18.6550, -48.1950],
+  'fátima': [-18.6550, -48.1950], 'n.s fátima': [-18.6540, -48.1930],
+  'são judas tadeu': [-18.6430, -48.2100], 'sao judas': [-18.6430, -48.2100],
+  'park dos verdes': [-18.6380, -48.2120], 'bela suica': [-18.6300, -48.1880],
+  'monte moria': [-18.6650, -48.1900], 'jardim milenium': [-18.6330, -48.2100],
+  'sao joao': [-18.6440, -48.2030], 'portal dos ipes': [-18.6280, -48.1950],
+  'gutierrez': [-18.6340, -48.2000],
+};
+
+function extrairBairroNome(name) {
+  if (!name) return '';
+  const lower = name.toLowerCase();
+  if (lower.includes('bairro ')) {
+    const parts = name.split(/bairro /i);
+    if (parts[1]) return parts[1].split(',')[0].trim();
+  }
+  if (lower.includes('distrito industrial')) return 'Distrito Industrial';
+  if (lower.includes('centro')) return 'Centro';
+  if (lower.includes('industrial')) return 'Industrial';
+  return '';
+}
+
+function geocodificarLocal(name) {
+  const lower = name.toLowerCase();
+  
+  // Tentar encontrar bairro no nome
+  for (const [bairro, coords] of Object.entries(BAIRRO_COORDS)) {
+    if (lower.includes(bairro)) {
+      return {
+        lat: coords[0] + (Math.random() - 0.5) * 0.003,
+        lon: coords[1] + (Math.random() - 0.5) * 0.003
+      };
+    }
+  }
+
+  // Ruas conhecidas de Araguari (mapeamento manual)
+  const STREET_MAP = {
+    'batalhão mauá': [-18.658, -48.183], 'elias peixoto': [-18.649, -48.184],
+    'circular': [-18.638, -48.178], 'coronel póvoa': [-18.647, -48.189],
+    'florestina': [-18.653, -48.179], 'brasil': [-18.647, -48.191],
+    'amazonas': [-18.645, -48.190], 'tiradentes': [-18.646, -48.190],
+    'minas gerais': [-18.648, -48.188], 'joaquim barbosa': [-18.636, -48.194],
+    'padre nicácio': [-18.635, -48.196], 'padre nicassio': [-18.635, -48.196],
+    'saturno': [-18.660, -48.199], 'trindade': [-18.661, -48.200],
+    'cristalina': [-18.653, -48.205], 'meia ponte': [-18.652, -48.203],
+    'saudade': [-18.654, -48.178], 'piauí': [-18.648, -48.173],
+    'sebastião naves': [-18.647, -48.175], 'hugo alessi': [-18.670, -48.174],
+    'melo viana': [-18.649, -48.183], 'coromandel': [-18.646, -48.169],
+    'br-050': [-18.671, -48.177], 'rodovia': [-18.671, -48.177],
+    'floriano peixoto': [-18.648, -48.189], 'rio de janeiro': [-18.646, -48.187],
+    'venezuela': [-18.651, -48.193], 'alvim borges': [-18.652, -48.182],
+  };
+
+  for (const [street, coords] of Object.entries(STREET_MAP)) {
+    if (lower.includes(street)) {
+      return {
+        lat: coords[0] + (Math.random() - 0.5) * 0.002,
+        lon: coords[1] + (Math.random() - 0.5) * 0.002
+      };
+    }
+  }
+
+  // Fallback: area urbana de Araguari
+  return {
+    lat: -18.648 + (Math.random() - 0.5) * 0.035,
+    lon: -48.192 + (Math.random() - 0.5) * 0.035
+  };
 }
 
 // Serve admin panel
