@@ -433,14 +433,14 @@ a { text-decoration: none; color: inherit; }
     <a class="sidebar-link active" href="#inicio" onclick="setActive(this)">
       <i class="fas fa-home"></i> Inicio
     </a>
+    <a class="sidebar-link" href="#vigilancia-epidemiologica" onclick="setActive(this)">
+      <i class="fas fa-virus"></i> Vig. Epidemiologica
+    </a>
     <a class="sidebar-link" href="#atencao-primaria" onclick="setActive(this)">
       <i class="fas fa-hospital"></i> Atencao Primaria
     </a>
     <a class="sidebar-link" href="#vigilancia-sanitaria" onclick="setActive(this)">
       <i class="fas fa-search"></i> Vigilancia Sanitaria
-    </a>
-    <a class="sidebar-link" href="#vigilancia-epidemiologica" onclick="setActive(this)">
-      <i class="fas fa-chart-bar"></i> Vig. Epidemiologica
     </a>
     <a class="sidebar-link" href="#vacinacao" onclick="setActive(this)">
       <i class="fas fa-syringe"></i> Vacinacao
@@ -578,6 +578,173 @@ a { text-decoration: none; color: inherit; }
     <div class="module-desc">CAPS, RAPS e Acompanhamento</div>
     <div class="module-count">512</div>
     <div style="font-size:11px;color:#718096;margin-top:2px">usuarios ativos</div>
+  </div>
+</div>
+
+<!-- ===== VIGILANCIA EPIDEMIOLOGICA ===== -->
+<div class="detail-section" id="vigilancia-epidemiologica">
+  <div class="detail-section-header">
+    <div class="detail-section-icon orange"><i class="fas fa-virus"></i></div>
+    <div>
+      <div class="detail-section-title">Vigilancia Epidemiologica - Arboviroses 2026</div>
+      <div class="detail-section-subtitle">Dengue (A90) e Chikungunya (A92.0) - Dados SINAN | Araguari-MG</div>
+    </div>
+  </div>
+
+  <!-- KPIs Gerais -->
+  <div class="ve-kpi-row" id="ve-kpi-row">
+    <div class="ve-kpi-item total">
+      <div class="value" id="kpi-total">0</div>
+      <div class="label">Total Notificacoes</div>
+    </div>
+    <div class="ve-kpi-item dengue">
+      <div class="value" id="kpi-dengue">0</div>
+      <div class="label">Dengue (A90)</div>
+    </div>
+    <div class="ve-kpi-item chik">
+      <div class="value" id="kpi-chik">0</div>
+      <div class="label">Chikungunya (A92.0)</div>
+    </div>
+    <div class="ve-kpi-item hosp">
+      <div class="value" id="kpi-hosp">0</div>
+      <div class="label">Hospitalizacoes</div>
+    </div>
+    <div class="ve-kpi-item obito">
+      <div class="value" id="kpi-obito">0</div>
+      <div class="label">Obitos</div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="ve-filters">
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Periodo</span>
+      <select class="ve-filter-select" id="filtro-mes" onchange="aplicarFiltros()">
+        <option value="todos">Todos os Meses</option>
+        <option value="01">Janeiro/2026</option>
+        <option value="02">Fevereiro/2026</option>
+        <option value="03">Marco/2026</option>
+        <option value="04">Abril/2026</option>
+        <option value="05">Maio/2026</option>
+      </select>
+    </div>
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Agravo</span>
+      <select class="ve-filter-select" id="filtro-agravo" onchange="aplicarFiltros()">
+        <option value="todos">Dengue + Chikungunya</option>
+        <option value="dengue">Somente Dengue</option>
+        <option value="chik">Somente Chikungunya</option>
+      </select>
+    </div>
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Visualizar</span>
+      <select class="ve-filter-select" id="filtro-tipo" onchange="aplicarFiltros()">
+        <option value="notificados">Notificados</option>
+        <option value="confirmados">Confirmados</option>
+      </select>
+    </div>
+    <div class="ve-filter-group">
+      <span class="ve-filter-label">Top Bairros</span>
+      <select class="ve-filter-select" id="filtro-top" onchange="aplicarFiltros()">
+        <option value="15">Top 15</option>
+        <option value="25">Top 25</option>
+        <option value="47">Todos (47)</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- MAPA -->
+  <div class="cards-row-2">
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="card-title" style="padding:18px 22px 0"><i class="fas fa-map-marked-alt"></i> Mapa de Calor por Bairro - Araguari-MG</div>
+      <div class="ve-layer-toggle" id="edl-toggles" style="display:none">
+        <label id="label-edl-pe" style="display:none">
+          <input type="checkbox" id="toggle-edls" checked onchange="toggleEDLs()">
+          <span style="display:inline-block;width:12px;height:12px;background:#E65100;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #E65100"></span> <span id="edl-pe-label">EDLs Pontos Estrategicos</span>
+        </label>
+        <label id="label-edl-res" style="display:none">
+          <input type="checkbox" id="toggle-edls-res" checked onchange="toggleEDLsRes()">
+          <span style="display:inline-block;width:12px;height:12px;background:#0288D1;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #0288D1"></span> <span id="edl-res-label">EDLs Residenciais</span>
+        </label>
+      </div>
+      <div class="ve-map-container" id="map-araguari">
+        <div class="ve-map-legend" id="map-legend">
+          <div class="ve-legend-title">Notificacoes por Bairro</div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fcbba1"></div><span class="ve-legend-label">1 - 50</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fb6a4a"></div><span class="ve-legend-label">51 - 150</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#de2d26"></div><span class="ve-legend-label">151 - 300</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#a50f15"></div><span class="ve-legend-label">301 - 450</span></div>
+          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#67000d"></div><span class="ve-legend-label">&gt; 450</span></div>
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
+            <div class="ve-legend-item"><div style="width:10px;height:10px;background:#E65100;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Ponto Estrategico</span></div>
+            <div class="ve-legend-item"><div style="width:10px;height:10px;background:#0288D1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Residencial</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-sort-amount-down"></i> Ranking de Bairros <span id="ranking-subtitle" style="font-weight:400;color:var(--text-light);font-size:11px;margin-left:8px">(Todos os meses - Dengue+Chik)</span></div>
+      <div class="table-wrapper" style="max-height:490px;overflow-y:auto">
+        <table class="ve-ranking-table" id="ranking-table">
+          <thead>
+            <tr><th>#</th><th>Bairro</th><th>Dengue</th><th>Chik</th><th>Total</th><th>Grafico</th></tr>
+          </thead>
+          <tbody id="ranking-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CURVA EPIDEMICA -->
+  <div class="cards-row-2" style="margin-top:24px">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-area"></i> Curva Epidemica - Semanas Epidemiologicas 2026</div>
+      <div class="chart-container-lg"><canvas id="chartVE1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Comparativo Mensal - Dengue vs Chikungunya</div>
+      <div class="chart-container-lg"><canvas id="chartVE2"></canvas></div>
+    </div>
+  </div>
+
+  <!-- TABELA RESUMO + ALERTAS -->
+  <div class="cards-row-2" style="margin-top:24px">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Resumo Geral - Arboviroses 2026</div>
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Agravo</th><th>Notificados</th><th>Confirmados</th><th>Intern.</th><th>Obitos</th><th>Situacao</th></tr>
+          </thead>
+          <tbody id="tabela-resumo">
+            <tr>
+              <td><strong style="color:#e74c3c">Dengue (A90)</strong></td>
+              <td id="res-d-not">--</td><td id="res-d-conf">--</td><td id="res-d-hosp">--</td><td id="res-d-obt">--</td>
+              <td><span class="semaforo verde" id="res-d-status"><span class="semaforo-dot"></span>Aguardando dados</span></td>
+            </tr>
+            <tr>
+              <td><strong style="color:#8e44ad">Chikungunya (A92.0)</strong></td>
+              <td id="res-c-not">--</td><td id="res-c-conf">--</td><td id="res-c-hosp">--</td><td id="res-c-obt">--</td>
+              <td><span class="semaforo verde" id="res-c-status"><span class="semaforo-dot"></span>Aguardando dados</span></td>
+            </tr>
+            <tr style="background:#f7fafc;font-weight:700">
+              <td>TOTAL</td><td id="res-total-not">--</td><td id="res-total-conf">--</td><td id="res-total-hosp">--</td><td id="res-total-obt">--</td>
+              <td id="res-total-status">--</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-exclamation-triangle"></i> Alertas e Situacao Epidemiologica</div>
+      <div style="margin-top:8px" id="alertas-container">
+        <div style="padding:16px;background:#f7fafc;border-radius:10px;text-align:center">
+          <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:#a0aec0;margin-bottom:8px;display:block"></i>
+          <div style="font-size:13px;color:#718096">Faca upload dos dados pelo painel admin para visualizar alertas</div>
+          <a href="/admin" style="font-size:12px;color:var(--primary);font-weight:600;margin-top:8px;display:inline-block"><i class="fas fa-arrow-right"></i> Acessar Admin</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -844,173 +1011,6 @@ a { text-decoration: none; color: inherit; }
           <span class="badge badge-red">Documentacao (8)</span>
           <span class="badge badge-orange">Estrutura (6)</span>
           <span class="badge badge-gray">Outros (4)</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ===== VIGILANCIA EPIDEMIOLOGICA ===== -->
-<div class="detail-section" id="vigilancia-epidemiologica">
-  <div class="detail-section-header">
-    <div class="detail-section-icon orange"><i class="fas fa-virus"></i></div>
-    <div>
-      <div class="detail-section-title">Vigilancia Epidemiologica - Arboviroses 2026</div>
-      <div class="detail-section-subtitle">Dengue (A90) e Chikungunya (A92.0) - Dados SINAN | Araguari-MG</div>
-    </div>
-  </div>
-
-  <!-- KPIs Gerais -->
-  <div class="ve-kpi-row" id="ve-kpi-row">
-    <div class="ve-kpi-item total">
-      <div class="value" id="kpi-total">0</div>
-      <div class="label">Total Notificacoes</div>
-    </div>
-    <div class="ve-kpi-item dengue">
-      <div class="value" id="kpi-dengue">0</div>
-      <div class="label">Dengue (A90)</div>
-    </div>
-    <div class="ve-kpi-item chik">
-      <div class="value" id="kpi-chik">0</div>
-      <div class="label">Chikungunya (A92.0)</div>
-    </div>
-    <div class="ve-kpi-item hosp">
-      <div class="value" id="kpi-hosp">0</div>
-      <div class="label">Hospitalizacoes</div>
-    </div>
-    <div class="ve-kpi-item obito">
-      <div class="value" id="kpi-obito">0</div>
-      <div class="label">Obitos</div>
-    </div>
-  </div>
-
-  <!-- FILTROS -->
-  <div class="ve-filters">
-    <div class="ve-filter-group">
-      <span class="ve-filter-label">Periodo</span>
-      <select class="ve-filter-select" id="filtro-mes" onchange="aplicarFiltros()">
-        <option value="todos">Todos os Meses</option>
-        <option value="01">Janeiro/2026</option>
-        <option value="02">Fevereiro/2026</option>
-        <option value="03">Marco/2026</option>
-        <option value="04">Abril/2026</option>
-        <option value="05">Maio/2026</option>
-      </select>
-    </div>
-    <div class="ve-filter-group">
-      <span class="ve-filter-label">Agravo</span>
-      <select class="ve-filter-select" id="filtro-agravo" onchange="aplicarFiltros()">
-        <option value="todos">Dengue + Chikungunya</option>
-        <option value="dengue">Somente Dengue</option>
-        <option value="chik">Somente Chikungunya</option>
-      </select>
-    </div>
-    <div class="ve-filter-group">
-      <span class="ve-filter-label">Visualizar</span>
-      <select class="ve-filter-select" id="filtro-tipo" onchange="aplicarFiltros()">
-        <option value="notificados">Notificados</option>
-        <option value="confirmados">Confirmados</option>
-      </select>
-    </div>
-    <div class="ve-filter-group">
-      <span class="ve-filter-label">Top Bairros</span>
-      <select class="ve-filter-select" id="filtro-top" onchange="aplicarFiltros()">
-        <option value="15">Top 15</option>
-        <option value="25">Top 25</option>
-        <option value="47">Todos (47)</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- MAPA -->
-  <div class="cards-row-2">
-    <div class="card" style="padding:0;overflow:hidden">
-      <div class="card-title" style="padding:18px 22px 0"><i class="fas fa-map-marked-alt"></i> Mapa de Calor por Bairro - Araguari-MG</div>
-      <div class="ve-layer-toggle" id="edl-toggles" style="display:none">
-        <label id="label-edl-pe" style="display:none">
-          <input type="checkbox" id="toggle-edls" checked onchange="toggleEDLs()">
-          <span style="display:inline-block;width:12px;height:12px;background:#E65100;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #E65100"></span> <span id="edl-pe-label">EDLs Pontos Estrategicos</span>
-        </label>
-        <label id="label-edl-res" style="display:none">
-          <input type="checkbox" id="toggle-edls-res" checked onchange="toggleEDLsRes()">
-          <span style="display:inline-block;width:12px;height:12px;background:#0288D1;border-radius:50%;box-shadow:0 0 0 2px #fff,0 0 0 3px #0288D1"></span> <span id="edl-res-label">EDLs Residenciais</span>
-        </label>
-      </div>
-      <div class="ve-map-container" id="map-araguari">
-        <div class="ve-map-legend" id="map-legend">
-          <div class="ve-legend-title">Notificacoes por Bairro</div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fcbba1"></div><span class="ve-legend-label">1 - 50</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#fb6a4a"></div><span class="ve-legend-label">51 - 150</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#de2d26"></div><span class="ve-legend-label">151 - 300</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#a50f15"></div><span class="ve-legend-label">301 - 450</span></div>
-          <div class="ve-legend-item"><div class="ve-legend-color" style="background:#67000d"></div><span class="ve-legend-label">&gt; 450</span></div>
-          <div style="margin-top:8px;padding-top:8px;border-top:1px solid #eee">
-            <div class="ve-legend-item"><div style="width:10px;height:10px;background:#E65100;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Ponto Estrategico</span></div>
-            <div class="ve-legend-item"><div style="width:10px;height:10px;background:#0288D1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 3px rgba(0,0,0,0.3)"></div><span class="ve-legend-label">EDL Residencial</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-sort-amount-down"></i> Ranking de Bairros <span id="ranking-subtitle" style="font-weight:400;color:var(--text-light);font-size:11px;margin-left:8px">(Todos os meses - Dengue+Chik)</span></div>
-      <div class="table-wrapper" style="max-height:490px;overflow-y:auto">
-        <table class="ve-ranking-table" id="ranking-table">
-          <thead>
-            <tr><th>#</th><th>Bairro</th><th>Dengue</th><th>Chik</th><th>Total</th><th>Grafico</th></tr>
-          </thead>
-          <tbody id="ranking-tbody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- CURVA EPIDEMICA -->
-  <div class="cards-row-2" style="margin-top:24px">
-    <div class="card">
-      <div class="card-title"><i class="fas fa-chart-area"></i> Curva Epidemica - Semanas Epidemiologicas 2026</div>
-      <div class="chart-container-lg"><canvas id="chartVE1"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-chart-bar"></i> Comparativo Mensal - Dengue vs Chikungunya</div>
-      <div class="chart-container-lg"><canvas id="chartVE2"></canvas></div>
-    </div>
-  </div>
-
-  <!-- TABELA RESUMO + ALERTAS -->
-  <div class="cards-row-2" style="margin-top:24px">
-    <div class="card">
-      <div class="card-title"><i class="fas fa-table"></i> Resumo Geral - Arboviroses 2026</div>
-      <div class="table-wrapper">
-        <table class="data-table">
-          <thead>
-            <tr><th>Agravo</th><th>Notificados</th><th>Confirmados</th><th>Intern.</th><th>Obitos</th><th>Situacao</th></tr>
-          </thead>
-          <tbody id="tabela-resumo">
-            <tr>
-              <td><strong style="color:#e74c3c">Dengue (A90)</strong></td>
-              <td id="res-d-not">--</td><td id="res-d-conf">--</td><td id="res-d-hosp">--</td><td id="res-d-obt">--</td>
-              <td><span class="semaforo verde" id="res-d-status"><span class="semaforo-dot"></span>Aguardando dados</span></td>
-            </tr>
-            <tr>
-              <td><strong style="color:#8e44ad">Chikungunya (A92.0)</strong></td>
-              <td id="res-c-not">--</td><td id="res-c-conf">--</td><td id="res-c-hosp">--</td><td id="res-c-obt">--</td>
-              <td><span class="semaforo verde" id="res-c-status"><span class="semaforo-dot"></span>Aguardando dados</span></td>
-            </tr>
-            <tr style="background:#f7fafc;font-weight:700">
-              <td>TOTAL</td><td id="res-total-not">--</td><td id="res-total-conf">--</td><td id="res-total-hosp">--</td><td id="res-total-obt">--</td>
-              <td id="res-total-status">--</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-exclamation-triangle"></i> Alertas e Situacao Epidemiologica</div>
-      <div style="margin-top:8px" id="alertas-container">
-        <div style="padding:16px;background:#f7fafc;border-radius:10px;text-align:center">
-          <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:#a0aec0;margin-bottom:8px;display:block"></i>
-          <div style="font-size:13px;color:#718096">Faca upload dos dados pelo painel admin para visualizar alertas</div>
-          <a href="/admin" style="font-size:12px;color:var(--primary);font-weight:600;margin-top:8px;display:inline-block"><i class="fas fa-arrow-right"></i> Acessar Admin</a>
         </div>
       </div>
     </div>
@@ -1400,8 +1400,9 @@ a { text-decoration: none; color: inherit; }
 
 <!-- FOOTER -->
 <footer class="footer">
-  <strong>Prefeitura Municipal de Araguari - Secretaria de Saude</strong> | Atualizado em tempo real
-  <br><span style="font-size:11px;opacity:0.7">Sistema de Informacoes em Saude - Versao 2025.1 | Dados referentes ao municipio de Araguari-MG (pop. ~120.000 hab.)</span>
+  <strong>Prefeitura Municipal de Araguari - Secretaria de Saude</strong>
+  <br><span style="font-size:11px;opacity:0.85;margin-top:4px;display:inline-block">Vigilancia Epidemiologica | Atencao Primaria em Saude</span>
+  <br><span style="font-size:11px;opacity:0.7;margin-top:6px;display:inline-block">Desenvolvido pela Equipe Tecnologia da Informacao APS - Alexandre Lemos | aps@araguari.mg.gov.br</span>
 </footer>
 
 <script>
