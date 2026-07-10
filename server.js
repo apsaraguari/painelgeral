@@ -134,6 +134,29 @@ app.get('/api/data', (req, res) => {
   }
 });
 
+// Debug: check raw date data
+app.get('/api/debug/dates', authMiddleware, (req, res) => {
+  const sample = db.prepare(`
+    SELECT dt_sin_pri, COUNT(*) as qty 
+    FROM notificacoes 
+    WHERE dt_sin_pri != '' 
+    GROUP BY dt_sin_pri 
+    ORDER BY qty DESC 
+    LIMIT 20
+  `).all();
+  const months = db.prepare(`
+    SELECT SUBSTR(dt_sin_pri, 5, 2) as mes, COUNT(*) as qty 
+    FROM notificacoes 
+    WHERE LENGTH(dt_sin_pri) = 8 
+    GROUP BY SUBSTR(dt_sin_pri, 5, 2)
+    ORDER BY mes
+  `).all();
+  const total = db.prepare(`SELECT COUNT(*) as total FROM notificacoes`).get();
+  const withDate = db.prepare(`SELECT COUNT(*) as total FROM notificacoes WHERE LENGTH(dt_sin_pri) = 8`).get();
+  const noDate = db.prepare(`SELECT COUNT(*) as total FROM notificacoes WHERE dt_sin_pri = '' OR dt_sin_pri IS NULL`).get();
+  res.json({ total: total.total, withDate8: withDate.total, noDate: noDate.total, sampleDates: sample, monthlyDistrib: months });
+});
+
 // Delete upload record
 app.delete('/api/upload/:id', authMiddleware, (req, res) => {
   const upload = db.prepare('SELECT * FROM uploads WHERE id = ?').get(req.params.id);
@@ -186,6 +209,12 @@ app.post('/api/limpar', authMiddleware, (req, res) => {
 async function processDBF(filePath, category, originalName) {
   const dbf = await DBFFile.open(filePath);
   const records = await dbf.readRecords(dbf.recordCount);
+
+  // Debug: log first 3 date values
+  for (let i = 0; i < Math.min(3, records.length); i++) {
+    const raw = records[i].DT_SIN_PRI;
+    console.log(`DBF date sample [${i}]: raw="${raw}" type=${typeof raw} instanceof_Date=${raw instanceof Date}`);
+  }
 
   const count = importarNotificacoes(records, category, originalName);
 

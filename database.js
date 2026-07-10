@@ -266,9 +266,8 @@ function gerarDadosDashboard() {
       SUM(CASE WHEN (agravo='dengue' AND classi_fin='10') OR (agravo='chikungunya' AND classi_fin='13') THEN 1 ELSE 0 END) as conf
     FROM notificacoes
     WHERE LENGTH(dt_sin_pri) = 8 
-      AND SUBSTR(dt_sin_pri, 1, 4) IN ('2025','2026')
       AND SUBSTR(dt_sin_pri, 5, 2) BETWEEN '01' AND '12'
-    GROUP BY nm_bairro, agravo, SUBSTR(dt_sin_pri, 1, 4) || SUBSTR(dt_sin_pri, 5, 2)
+    GROUP BY nm_bairro, agravo, SUBSTR(dt_sin_pri, 5, 2)
   `);
 
   // Curva epidemica por semana
