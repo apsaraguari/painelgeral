@@ -147,6 +147,40 @@ app.delete('/api/upload/:id', authMiddleware, (req, res) => {
   res.json({ success: true });
 });
 
+// Limpar dados por categoria
+app.post('/api/limpar', authMiddleware, (req, res) => {
+  const { categoria } = req.body;
+
+  if (categoria === 'dengue') {
+    stmts.clearNotificacoes.run('dengue');
+    gerarDadosDashboard();
+    res.json({ success: true, message: 'Dados de Dengue apagados' });
+  } else if (categoria === 'chikungunya') {
+    stmts.clearNotificacoes.run('chikungunya');
+    gerarDadosDashboard();
+    res.json({ success: true, message: 'Dados de Chikungunya apagados' });
+  } else if (categoria === 'edl_pe') {
+    stmts.clearEdls.run('pe');
+    gerarDadosDashboard();
+    res.json({ success: true, message: 'EDLs Pontos Estrategicos apagados' });
+  } else if (categoria === 'edl_residencial') {
+    stmts.clearEdls.run('residencial');
+    gerarDadosDashboard();
+    res.json({ success: true, message: 'EDLs Residenciais apagados' });
+  } else if (categoria === 'tudo') {
+    stmts.clearNotificacoes.run('dengue');
+    stmts.clearNotificacoes.run('chikungunya');
+    stmts.clearEdls.run('pe');
+    stmts.clearEdls.run('residencial');
+    db.prepare('DELETE FROM uploads').run();
+    db.prepare('DELETE FROM cache_dashboard').run();
+    gerarDadosDashboard();
+    res.json({ success: true, message: 'Todos os dados foram apagados' });
+  } else {
+    res.status(400).json({ error: 'Categoria invalida' });
+  }
+});
+
 // === PROCESSING FUNCTIONS ===
 
 async function processDBF(filePath, category, originalName) {

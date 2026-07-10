@@ -266,6 +266,19 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
         <p style="color:var(--text-dim);font-size:13px;padding:20px;text-align:center">Carregando...</p>
       </div>
     </div>
+
+    <!-- Limpar Dados -->
+    <div class="admin-card" style="border-color:#ef4444">
+      <h2><i class="fas fa-trash-alt" style="color:#ef4444"></i> Limpar Dados</h2>
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:16px">Apaga os dados do banco. O dashboard ficara vazio ate novo upload.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button class="btn-sm danger" onclick="limparDados('dengue')"><i class="fas fa-virus"></i> Limpar Dengue</button>
+        <button class="btn-sm danger" onclick="limparDados('chikungunya')"><i class="fas fa-virus"></i> Limpar Chikungunya</button>
+        <button class="btn-sm danger" onclick="limparDados('edl_pe')"><i class="fas fa-map-pin"></i> Limpar EDLs PE</button>
+        <button class="btn-sm danger" onclick="limparDados('edl_residencial')"><i class="fas fa-map-pin"></i> Limpar EDLs Res</button>
+        <button class="btn-sm" style="background:#ef4444;color:#fff;border-color:#ef4444" onclick="limparDados('tudo')"><i class="fas fa-skull-crossbones"></i> LIMPAR TUDO</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -449,6 +462,35 @@ zone.addEventListener('drop', e => {
 
 // Init
 checkAuth();
+
+async function limparDados(categoria) {
+  const msgs = {
+    dengue: 'APAGAR todos os dados de Dengue?',
+    chikungunya: 'APAGAR todos os dados de Chikungunya?',
+    edl_pe: 'APAGAR todos os EDLs Pontos Estrategicos?',
+    edl_residencial: 'APAGAR todos os EDLs Residenciais?',
+    tudo: 'APAGAR TODOS OS DADOS? Esta acao nao pode ser desfeita!'
+  };
+  if (!confirm(msgs[categoria] || 'Confirma?')) return;
+  if (categoria === 'tudo' && !confirm('TEM CERTEZA? Todos os dados serao perdidos.')) return;
+
+  try {
+    const res = await fetch('/api/limpar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categoria })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(data.message, 'success');
+      loadStatus();
+    } else {
+      showToast(data.error, 'error');
+    }
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
+}
 </script>
 </body>
 </html>
