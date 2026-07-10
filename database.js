@@ -395,18 +395,43 @@ function clean(val) {
 
 function cleanDate(val) {
   if (!val) return '';
+  
   // Se for objeto Date (dbffile retorna Date para campos tipo D)
-  if (val instanceof Date) {
-    const y = val.getFullYear();
-    const m = String(val.getMonth() + 1).padStart(2, '0');
-    const d = String(val.getDate()).padStart(2, '0');
-    return `${y}${m}${d}`;
+  if (val instanceof Date && !isNaN(val.getTime())) {
+    // Usar UTC para evitar problemas de timezone
+    const y = val.getUTCFullYear();
+    const m = String(val.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(val.getUTCDate()).padStart(2, '0');
+    if (y >= 1990 && y <= 2030) return `${y}${m}${d}`;
+    return '';
   }
-  const s = String(val).trim().replace(/-/g, '').replace(/\//g, '');
-  if (s.length === 8 && !isNaN(s)) return s;
-  // Tentar extrair YYYYMMDD de strings longas
+  
+  // Se for string
+  let s = String(val).trim();
+  
+  // Formato ISO: 2026-03-10T00:00:00.000Z ou 2026-03-10
+  if (s.includes('T') || (s.includes('-') && s.length >= 10)) {
+    try {
+      const dt = new Date(s);
+      if (!isNaN(dt.getTime())) {
+        const y = dt.getUTCFullYear();
+        const m = String(dt.getUTCMonth() + 1).padStart(2, '0');
+        const d2 = String(dt.getUTCDate()).padStart(2, '0');
+        if (y >= 1990 && y <= 2030) return `${y}${m}${d2}`;
+      }
+    } catch {}
+  }
+  
+  // Remover separadores
+  s = s.replace(/[-\/\.]/g, '');
+  
+  // Se tem 8 digitos numericos
+  if (s.length === 8 && /^\d{8}$/.test(s)) return s;
+  
+  // Tentar extrair 8 digitos
   const match = s.match(/(\d{8})/);
   if (match) return match[1];
+  
   return '';
 }
 

@@ -210,13 +210,26 @@ async function processDBF(filePath, category, originalName) {
   const dbf = await DBFFile.open(filePath);
   const records = await dbf.readRecords(dbf.recordCount);
 
-  // Debug: log first 3 date values
-  for (let i = 0; i < Math.min(3, records.length); i++) {
+  // Debug: log date handling
+  for (let i = 0; i < Math.min(5, records.length); i++) {
     const raw = records[i].DT_SIN_PRI;
-    console.log(`DBF date sample [${i}]: raw="${raw}" type=${typeof raw} instanceof_Date=${raw instanceof Date}`);
+    const type = raw instanceof Date ? 'Date' : typeof raw;
+    let preview = '';
+    if (raw instanceof Date && !isNaN(raw.getTime())) {
+      preview = `${raw.getUTCFullYear()}${String(raw.getUTCMonth()+1).padStart(2,'0')}${String(raw.getUTCDate()).padStart(2,'0')}`;
+    } else {
+      preview = String(raw || '').substring(0, 20);
+    }
+    console.log(`[DBF] rec[${i}] DT_SIN_PRI: type=${type} -> "${preview}"`);
   }
 
   const count = importarNotificacoes(records, category, originalName);
+
+  // Verify dates were saved
+  const check = db.prepare(`SELECT dt_sin_pri, COUNT(*) as qty FROM notificacoes WHERE agravo=? AND dt_sin_pri != '' GROUP BY dt_sin_pri ORDER BY qty DESC LIMIT 5`).all(category);
+  console.log(`[DBF] Top dates in DB for ${category}:`, JSON.stringify(check));
+  const emptyDates = db.prepare(`SELECT COUNT(*) as qty FROM notificacoes WHERE agravo=? AND (dt_sin_pri = '' OR dt_sin_pri IS NULL)`).get(category);
+  console.log(`[DBF] Empty dates for ${category}: ${emptyDates.qty}`);
 
   return {
     count,
