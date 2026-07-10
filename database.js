@@ -265,8 +265,10 @@ function gerarDadosDashboard() {
       COUNT(*) as notif,
       SUM(CASE WHEN (agravo='dengue' AND classi_fin='10') OR (agravo='chikungunya' AND classi_fin='13') THEN 1 ELSE 0 END) as conf
     FROM notificacoes
-    WHERE dt_sin_pri LIKE '2026%' AND SUBSTR(dt_sin_pri, 5, 2) IN ('01','02','03','04','05','06','07','08','09','10','11','12')
-    GROUP BY nm_bairro, agravo, mes
+    WHERE LENGTH(dt_sin_pri) = 8 
+      AND SUBSTR(dt_sin_pri, 1, 4) IN ('2025','2026')
+      AND SUBSTR(dt_sin_pri, 5, 2) BETWEEN '01' AND '12'
+    GROUP BY nm_bairro, agravo, SUBSTR(dt_sin_pri, 1, 4) || SUBSTR(dt_sin_pri, 5, 2)
   `);
 
   // Curva epidemica por semana
@@ -394,8 +396,18 @@ function clean(val) {
 
 function cleanDate(val) {
   if (!val) return '';
-  const s = String(val).trim().replace(/-/g, '');
+  // Se for objeto Date (dbffile retorna Date para campos tipo D)
+  if (val instanceof Date) {
+    const y = val.getFullYear();
+    const m = String(val.getMonth() + 1).padStart(2, '0');
+    const d = String(val.getDate()).padStart(2, '0');
+    return `${y}${m}${d}`;
+  }
+  const s = String(val).trim().replace(/-/g, '').replace(/\//g, '');
   if (s.length === 8 && !isNaN(s)) return s;
+  // Tentar extrair YYYYMMDD de strings longas
+  const match = s.match(/(\d{8})/);
+  if (match) return match[1];
   return '';
 }
 
