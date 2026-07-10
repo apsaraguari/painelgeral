@@ -465,7 +465,7 @@ a { text-decoration: none; color: inherit; }
       </div>
       <div class="sidebar-kpi-item">
         <span class="sidebar-kpi-label">Notificacoes Arboviroses</span>
-        <span class="sidebar-kpi-value">8.018</span>
+        <span class="sidebar-kpi-value" id="sidebar-notif">--</span>
       </div>
       <div class="sidebar-kpi-item">
         <span class="sidebar-kpi-label">Vistorias</span>
@@ -519,7 +519,7 @@ a { text-decoration: none; color: inherit; }
   <div class="kpi-card orange">
     <div class="kpi-icon"><i class="fas fa-exclamation-triangle"></i></div>
     <div class="kpi-info">
-      <div class="kpi-value">8.018</div>
+      <div class="kpi-value" id="header-kpi-notif">--</div>
       <div class="kpi-label">Notificacoes Arboviroses</div>
       <div class="kpi-trend down"><i class="fas fa-arrow-up"></i> Epidemia Dengue + Chik 2026</div>
     </div>
@@ -555,7 +555,7 @@ a { text-decoration: none; color: inherit; }
     <span class="module-emoji">&#128202;</span>
     <div class="module-name">Vigilancia Epidemiologica</div>
     <div class="module-desc">Arboviroses - Dengue e Chikungunya</div>
-    <div class="module-count">8.018</div>
+    <div class="module-count" id="module-notif">--</div>
     <div style="font-size:11px;color:#718096;margin-top:2px">notificacoes 2026</div>
   </div>
   <div class="module-card mod-purple" onclick="document.getElementById('vacinacao').scrollIntoView({behavior:'smooth'})">
@@ -863,23 +863,23 @@ a { text-decoration: none; color: inherit; }
   <!-- KPIs Gerais -->
   <div class="ve-kpi-row" id="ve-kpi-row">
     <div class="ve-kpi-item total">
-      <div class="value" id="kpi-total">8.018</div>
+      <div class="value" id="kpi-total">0</div>
       <div class="label">Total Notificacoes</div>
     </div>
     <div class="ve-kpi-item dengue">
-      <div class="value" id="kpi-dengue">3.501</div>
+      <div class="value" id="kpi-dengue">0</div>
       <div class="label">Dengue (A90)</div>
     </div>
     <div class="ve-kpi-item chik">
-      <div class="value" id="kpi-chik">4.517</div>
+      <div class="value" id="kpi-chik">0</div>
       <div class="label">Chikungunya (A92.0)</div>
     </div>
     <div class="ve-kpi-item hosp">
-      <div class="value" id="kpi-hosp">150</div>
+      <div class="value" id="kpi-hosp">0</div>
       <div class="label">Hospitalizacoes</div>
     </div>
     <div class="ve-kpi-item obito">
-      <div class="value" id="kpi-obito">1</div>
+      <div class="value" id="kpi-obito">0</div>
       <div class="label">Obitos</div>
     </div>
   </div>
@@ -983,22 +983,22 @@ a { text-decoration: none; color: inherit; }
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
-            <tr><th>Agravo</th><th>Notificados</th><th>Confirmados</th><th>Descartados</th><th>Pendentes</th><th>Intern.</th><th>Obitos</th><th>Situacao</th></tr>
+            <tr><th>Agravo</th><th>Notificados</th><th>Confirmados</th><th>Intern.</th><th>Obitos</th><th>Situacao</th></tr>
           </thead>
-          <tbody>
+          <tbody id="tabela-resumo">
             <tr>
               <td><strong style="color:#e74c3c">Dengue (A90)</strong></td>
-              <td>3.501</td><td>548</td><td>1.447</td><td>1.185</td><td>92</td><td>0</td>
-              <td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Epidemia</span></td>
+              <td id="res-d-not">--</td><td id="res-d-conf">--</td><td id="res-d-hosp">--</td><td id="res-d-obt">--</td>
+              <td><span class="semaforo verde" id="res-d-status"><span class="semaforo-dot"></span>Aguardando dados</span></td>
             </tr>
             <tr>
               <td><strong style="color:#8e44ad">Chikungunya (A92.0)</strong></td>
-              <td>4.517</td><td>1.365</td><td>509</td><td>2.643</td><td>58</td><td>1</td>
-              <td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Epidemia</span></td>
+              <td id="res-c-not">--</td><td id="res-c-conf">--</td><td id="res-c-hosp">--</td><td id="res-c-obt">--</td>
+              <td><span class="semaforo verde" id="res-c-status"><span class="semaforo-dot"></span>Aguardando dados</span></td>
             </tr>
             <tr style="background:#f7fafc;font-weight:700">
-              <td>TOTAL</td><td>8.018</td><td>1.913</td><td>1.956</td><td>3.828</td><td>150</td><td>1</td>
-              <td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Critico</span></td>
+              <td>TOTAL</td><td id="res-total-not">--</td><td id="res-total-conf">--</td><td id="res-total-hosp">--</td><td id="res-total-obt">--</td>
+              <td id="res-total-status">--</td>
             </tr>
           </tbody>
         </table>
@@ -1006,23 +1006,11 @@ a { text-decoration: none; color: inherit; }
     </div>
     <div class="card">
       <div class="card-title"><i class="fas fa-exclamation-triangle"></i> Alertas e Situacao Epidemiologica</div>
-      <div style="margin-top:8px">
-        <div style="padding:12px;background:#fdedec;border-radius:10px;border-left:4px solid #e74c3c;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:600;color:#c0392b"><i class="fas fa-virus"></i> Co-epidemia Dengue + Chikungunya</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">8.018 notificacoes desde Dez/2025. Pico em Marco/2026 (SE 09-11).</div>
-          <div style="font-size:11px;color:#c0392b;margin-top:4px"><i class="fas fa-map-marker-alt"></i> Bairros criticos: Amorim, Brasilia, Independencia, Centro, Maria Eugenia</div>
-        </div>
-        <div style="padding:12px;background:#fef9e7;border-radius:10px;border-left:4px solid #f39c12;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:600;color:#d68910"><i class="fas fa-skull-crossbones"></i> 1 Obito por Chikungunya</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Paciente 87 anos, Bairro Ouro Verde. Inicio sintomas: 07/03, obito: 16/03/2026.</div>
-        </div>
-        <div style="padding:12px;background:#fef9e7;border-radius:10px;border-left:4px solid #f39c12;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:600;color:#d68910"><i class="fas fa-hospital"></i> 150 Hospitalizacoes</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">92 por Dengue + 58 por Chikungunya. Taxa internacao: 1,9%.</div>
-        </div>
-        <div style="padding:12px;background:#ebf5fb;border-radius:10px;border-left:4px solid #2980b9">
-          <div style="font-size:13px;font-weight:600;color:#2980b9"><i class="fas fa-chart-line"></i> Tendencia de Queda</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Maio/2026 apresenta reducao significativa. Curva em declinio.</div>
+      <div style="margin-top:8px" id="alertas-container">
+        <div style="padding:16px;background:#f7fafc;border-radius:10px;text-align:center">
+          <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:#a0aec0;margin-bottom:8px;display:block"></i>
+          <div style="font-size:13px;color:#718096">Faca upload dos dados pelo painel admin para visualizar alertas</div>
+          <a href="/admin" style="font-size:12px;color:var(--primary);font-weight:600;margin-top:8px;display:inline-block"><i class="fas fa-arrow-right"></i> Acessar Admin</a>
         </div>
       </div>
     </div>
@@ -1537,27 +1525,102 @@ async function carregarDadosAPI() {
         bairroData = data.bairros;
         dadosCarregados = true;
         console.log('Dados carregados da API:', Object.keys(bairroData).length, 'bairros');
-        // Update KPIs with meta
+
+        // Update KPIs
         if (data.meta) {
-          const d = data.meta.dengue || {notif:0};
-          const c = data.meta.chikungunya || {notif:0};
+          const d = data.meta.dengue || {notif:0,conf:0,hosp:0,obitos:0};
+          const c = data.meta.chikungunya || {notif:0,conf:0,hosp:0,obitos:0};
           document.getElementById('kpi-total').textContent = ((d.notif||0)+(c.notif||0)).toLocaleString('pt-BR');
           document.getElementById('kpi-dengue').textContent = (d.notif||0).toLocaleString('pt-BR');
           document.getElementById('kpi-chik').textContent = (c.notif||0).toLocaleString('pt-BR');
           document.getElementById('kpi-hosp').textContent = ((d.hosp||0)+(c.hosp||0)).toLocaleString('pt-BR');
           document.getElementById('kpi-obito').textContent = ((d.obitos||0)+(c.obitos||0)).toLocaleString('pt-BR');
+
+          // Update resumo table
+          document.getElementById('res-d-not').textContent = (d.notif||0).toLocaleString('pt-BR');
+          document.getElementById('res-d-conf').textContent = (d.conf||0).toLocaleString('pt-BR');
+          document.getElementById('res-d-hosp').textContent = (d.hosp||0).toLocaleString('pt-BR');
+          document.getElementById('res-d-obt').textContent = (d.obitos||0).toLocaleString('pt-BR');
+          document.getElementById('res-c-not').textContent = (c.notif||0).toLocaleString('pt-BR');
+          document.getElementById('res-c-conf').textContent = (c.conf||0).toLocaleString('pt-BR');
+          document.getElementById('res-c-hosp').textContent = (c.hosp||0).toLocaleString('pt-BR');
+          document.getElementById('res-c-obt').textContent = (c.obitos||0).toLocaleString('pt-BR');
+          document.getElementById('res-total-not').textContent = ((d.notif||0)+(c.notif||0)).toLocaleString('pt-BR');
+          document.getElementById('res-total-conf').textContent = ((d.conf||0)+(c.conf||0)).toLocaleString('pt-BR');
+          document.getElementById('res-total-hosp').textContent = ((d.hosp||0)+(c.hosp||0)).toLocaleString('pt-BR');
+          document.getElementById('res-total-obt').textContent = ((d.obitos||0)+(c.obitos||0)).toLocaleString('pt-BR');
+
+          // Alertas dinamicos
+          const totalNotif = (d.notif||0)+(c.notif||0);
+          const totalHosp = (d.hosp||0)+(c.hosp||0);
+          const totalObt = (d.obitos||0)+(c.obitos||0);
+          if (totalNotif > 0) {
+            let alertsHtml = '';
+            if (totalNotif > 1000) {
+              alertsHtml += '<div style="padding:12px;background:#fdedec;border-radius:10px;border-left:4px solid #e74c3c;margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:#c0392b"><i class="fas fa-virus"></i> Surto Ativo</div><div style="font-size:12px;color:#718096;margin-top:4px">' + totalNotif.toLocaleString('pt-BR') + ' notificacoes de arboviroses registradas.</div></div>';
+            }
+            if (totalObt > 0) {
+              alertsHtml += '<div style="padding:12px;background:#fef9e7;border-radius:10px;border-left:4px solid #f39c12;margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:#d68910"><i class="fas fa-skull-crossbones"></i> ' + totalObt + ' Obito(s) Registrado(s)</div></div>';
+            }
+            if (totalHosp > 0) {
+              alertsHtml += '<div style="padding:12px;background:#fef9e7;border-radius:10px;border-left:4px solid #f39c12;margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:#d68910"><i class="fas fa-hospital"></i> ' + totalHosp + ' Hospitalizacoes</div><div style="font-size:12px;color:#718096;margin-top:4px">Taxa internacao: ' + (totalHosp/totalNotif*100).toFixed(1) + '%</div></div>';
+            }
+            document.getElementById('alertas-container').innerHTML = alertsHtml;
+          }
         }
+
+        // Update curve chart if data available
+        if (data.curve) {
+          const dengueWeeks = data.curve.dengue || {};
+          const chikWeeks = data.curve.chikungunya || {};
+          const allWeeks = [...new Set([...Object.keys(dengueWeeks), ...Object.keys(chikWeeks)])].sort();
+          if (allWeeks.length > 0) {
+            curvaLabels = allWeeks.map(w => 'SE ' + w.substring(4));
+            curvaDengue = allWeeks.map(w => dengueWeeks[w] || 0);
+            curvaChik = allWeeks.map(w => chikWeeks[w] || 0);
+            if (window.chartVE1Instance) {
+              window.chartVE1Instance.data.labels = curvaLabels;
+              window.chartVE1Instance.data.datasets[0].data = curvaDengue;
+              window.chartVE1Instance.data.datasets[1].data = curvaChik;
+              window.chartVE1Instance.update();
+            }
+          }
+        }
+
+        // Load EDLs from API
+        if (data.edls && data.edls.length > 0) {
+          // Clear existing markers
+          edlMarkers.forEach(m => map.removeLayer(m));
+          edlMarkers = [];
+          edlResMarkers.forEach(m => map.removeLayer(m));
+          edlResMarkers = [];
+
+          edlPEPoints = [];
+          edlResPoints = [];
+
+          data.edls.forEach(edl => {
+            if (edl.categoria === 'pe') {
+              edlPEPoints.push(edl);
+            } else {
+              edlResPoints.push(edl);
+            }
+          });
+
+          criarEDLMarkers();
+          criarEDLResMarkers();
+        }
+
         aplicarFiltros();
         return;
       }
     }
-  } catch(e) { console.log('API indisponivel, usando dados estaticos'); }
-  // Fallback: dados estaticos originais permanecem
-  if (!dadosCarregados) aplicarFiltros();
+  } catch(e) { console.log('API indisponivel:', e.message); }
+  // Se nao tem dados, mostra vazio
+  aplicarFiltros();
 }
 
-// Dados estaticos como fallback (serao sobrescritos pela API se disponivel)
-bairroData = {"AMORIM":{"total":{"dengue_not":284,"dengue_conf":35,"chik_not":306,"chik_conf":126,"hosp":16,"obitos":0},"months":{"01":{"d_n":13,"d_c":7,"c_n":2,"c_c":1},"02":{"d_n":61,"d_c":7,"c_n":56,"c_c":43},"03":{"d_n":111,"d_c":14,"c_n":142,"c_c":77},"04":{"d_n":74,"d_c":6,"c_n":84,"c_c":5},"05":{"d_n":23,"d_c":0,"c_n":22,"c_c":0}}},"BRASILIA":{"total":{"dengue_not":261,"dengue_conf":30,"chik_not":310,"chik_conf":138,"hosp":3,"obitos":0},"months":{"01":{"d_n":15,"d_c":8,"c_n":5,"c_c":1},"02":{"d_n":72,"d_c":7,"c_n":66,"c_c":54},"03":{"d_n":93,"d_c":12,"c_n":118,"c_c":82},"04":{"d_n":63,"d_c":2,"c_n":95,"c_c":1},"05":{"d_n":17,"d_c":0,"c_n":25,"c_c":0}}}};
+// Dados carregados via API apos upload
+bairroData = {};
 
 // Coordenadas aproximadas dos bairros de Araguari-MG
 const bairroCoords = {
@@ -1622,13 +1685,16 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
 let mapMarkers = [];
 
 // EDLs Pontos Estratégicos
-const edlPEPoints = [{"name":"Rua Joaquim Barbosa, 1290, Bairro Aeroporto, Araguari - MG","bairro":"Aeroporto","lat":-18.667442,"lon":-48.1869},{"name":"Rua Maria Borela Pellegrini, 1777, Bairro Aeroporto","bairro":"Aeroporto","lat":-18.6689,"lon":-48.186107},{"name":"BR-050, 830, Distrito Industrial, Araguari - MG","bairro":"Distrito Industrial","lat":-18.671054,"lon":-48.177293},{"name":"Rua A, 32, Bairro Bosque, Araguari - MG","bairro":"Bosque","lat":-18.634431,"lon":-48.174652},{"name":"Rua Raul José de Belem, 2830, Bairro Bosque","bairro":"Bosque","lat":-18.636312,"lon":-48.174881},{"name":"Rua Andorinhas, 90, Bairro Bosque","bairro":"Bosque","lat":-18.637125,"lon":-48.172979},{"name":"Av. Batalhão Mauá, 1992, Bairro Maria Eugênia","bairro":"Maria Eugênia","lat":-18.659894,"lon":-48.183205},{"name":"Rua Prof. João Batista da Costa, 90, Maria Eugênia","bairro":"Maria Eugênia","lat":-18.6574,"lon":-48.18182},{"name":"Rua Prof. João Batista da Costa, 43, Maria Eugênia","bairro":"Maria Eugênia","lat":-18.659118,"lon":-48.181643},{"name":"Rua Prof. João Batista da Costa, 40, Maria Eugênia","bairro":"Maria Eugênia","lat":-18.656762,"lon":-48.183974},{"name":"Rua Eurípedes Barsanulfo, 602, Santa Helena","bairro":"Santa Helena","lat":-18.636777,"lon":-48.177207},{"name":"Rua Monte Alegre, 73, Santa Helena","bairro":"Santa Helena","lat":-18.638639,"lon":-48.179378},{"name":"Viveiro Flora Brasil, Av. Teodoreto Veloso de Carvalho","bairro":"Não identificado","lat":-18.645171,"lon":-48.190654},{"name":"Rua Secundária, 350, Bairro Ouro Verde","bairro":"Ouro Verde","lat":-18.663629,"lon":-48.209613},{"name":"Rua Maria Abadia de Araújo, 51, Sibipiruna","bairro":"Sibipiruna","lat":-18.62961,"lon":-48.179585},{"name":"Rua Cecília Schwartznann, 530, Sibipiruna","bairro":"Sibipiruna","lat":-18.629771,"lon":-48.179081},{"name":"Rua Piauí, 80, Bairro Paraíso","bairro":"Paraíso","lat":-18.647855,"lon":-48.173108},{"name":"Rua Sebastião Naves, 460, Paraíso","bairro":"Paraíso","lat":-18.648486,"lon":-48.174792},{"name":"Rua Sebastião Naves, 336, Paraíso","bairro":"Paraíso","lat":-18.646682,"lon":-48.174526},{"name":"R. João Rodrigues da Cunha, 2010 - Araguari","bairro":"Não identificado","lat":-18.645553,"lon":-48.189691},{"name":"Rua João Rodrigues da Cunha, 2010, Park dos Verdes","bairro":"Park dos Verdes","lat":-18.637182,"lon":-48.213817},{"name":"Rua Walter Santiago, 671, Santiago","bairro":"Santiago","lat":-18.640088,"lon":-48.205842},{"name":"Rua Bela Vista, 10, Bairro Amorim","bairro":"Amorim","lat":-18.636681,"lon":-48.196069},{"name":"Rua São Salvador, 681, Amorim","bairro":"Amorim","lat":-18.636596,"lon":-48.195888},{"name":"Rua Guarani, 155, Amorim","bairro":"Amorim","lat":-18.634457,"lon":-48.195541},{"name":"Rua Padre Nicácio, 1110, Amorim","bairro":"Amorim","lat":-18.635519,"lon":-48.196162},{"name":"Rua Abraão Calil, 135, Amorim","bairro":"Amorim","lat":-18.635932,"lon":-48.193253},{"name":"Av. Vereador Geraldo Teodoro, 1100, Amorim","bairro":"Amorim","lat":-18.634408,"lon":-48.194563},{"name":"Rua Joaquim Barbosa, 1355, Amorim","bairro":"Amorim","lat":-18.636315,"lon":-48.194083},{"name":"Rua Trindade, 221, Novo Horizonte","bairro":"Novo Horizonte","lat":-18.661346,"lon":-48.200482},{"name":"Rua Lamunier Queiroz Lopes, 510, Industrial","bairro":"Industrial","lat":-18.668042,"lon":-48.17444},{"name":"Rua Saturno, 65, Novo Horizonte","bairro":"Novo Horizonte","lat":-18.659772,"lon":-48.199262},{"name":"Rodovia BR-050, Km 39,5, Distrito Industrial","bairro":"Distrito Industrial","lat":-18.670629,"lon":-48.176896},{"name":"Rua Wanda Pires de Carvalho, 31, Araguari","bairro":"Não identificado","lat":-18.648084,"lon":-48.191872},{"name":"Rua Marta Aparecida Neves, 251, Independência","bairro":"Independência","lat":-18.640738,"lon":-48.185929},{"name":"Rua André Fernandes, 531, Vieno","bairro":"Vieno","lat":-18.658156,"lon":-48.168228},{"name":"Rua Natália Batista Dorneles, 301, Vieno","bairro":"Vieno","lat":-18.655495,"lon":-48.170741},{"name":"Rua Ana Batista, 740, Vieno","bairro":"Vieno","lat":-18.656378,"lon":-48.170417},{"name":"Rua Diolina Américo da Silva, 115, Vieno","bairro":"Vieno","lat":-18.655342,"lon":-48.170165},{"name":"Rua das Candeias, 596, São Judas Tadeu","bairro":"São Judas Tadeu","lat":-18.64394,"lon":-48.211013},{"name":"Rua Orlando César Viera, 240, Goiás Parte Alta","bairro":"Goiás Parte Alta","lat":-18.650755,"lon":-48.180949},{"name":"Rua Pastor Florentino Ferreira, 138, N.S Fátima","bairro":"N.S Fátima","lat":-18.653662,"lon":-48.191409},{"name":"Avenida Brasil, 1445, Araguari - MG","bairro":"Não identificado","lat":-18.647402,"lon":-48.191123},{"name":"Rua Amazonas, 1065, Araguari - MG","bairro":"Não identificado","lat":-18.64501,"lon":-48.189962},{"name":"Rua Florestina, 704, Miranda","bairro":"Miranda","lat":-18.654636,"lon":-48.179812},{"name":"Av. da Saudade, 284, Miranda","bairro":"Miranda","lat":-18.654561,"lon":-48.17749},{"name":"Rua da Prata, 31, Miranda","bairro":"Miranda","lat":-18.651832,"lon":-48.178311},{"name":"Rua Calimério de Ávila, 567, Miranda","bairro":"Miranda","lat":-18.654746,"lon":-48.178474},{"name":"Rua Florestina, 240, Miranda","bairro":"Miranda","lat":-18.651016,"lon":-48.177884},{"name":"Avenida das Palmeiras, 41, Alan Kardec","bairro":"Alan Kardec","lat":-18.639116,"lon":-48.206557},{"name":"Rua Alvim Borges, 140, Goiás","bairro":"Goiás","lat":-18.651954,"lon":-48.182117},{"name":"Av. Senador Melo Viana, 960, Goiás","bairro":"Goiás","lat":-18.649273,"lon":-48.182852},{"name":"Rua Coromandel, 1149, Jóquei Clube","bairro":"Jóquei Clube","lat":-18.645933,"lon":-48.169436},{"name":"Rua Cristalina, 372, Brasília","bairro":"Brasília","lat":-18.653554,"lon":-48.205261},{"name":"Rua Meia Ponte, 130, Brasília","bairro":"Brasília","lat":-18.652185,"lon":-48.203185},{"name":"Rua Antônio Lemos da Silva, 559, Centro","bairro":"Centro","lat":-18.645497,"lon":-48.190946},{"name":"BR-050, Km 38, Distrito Industrial","bairro":"Distrito Industrial","lat":-18.671998,"lon":-48.179285},{"name":"BR-050, Km 38-5, Distrito Industrial","bairro":"Distrito Industrial","lat":-18.670349,"lon":-48.176518},{"name":"Av. Hugo Alessi, 915, Industrial","bairro":"Industrial","lat":-18.670806,"lon":-48.174444}];
+let edlPEPoints = [];
 
 let edlMarkers = [];
 
 function criarEDLMarkers() {
   edlPEPoints.forEach(point => {
-    const marker = L.circleMarker([point.lat, point.lon], {
+    const lat = point.lat || point.latitude;
+    const lon = point.lon || point.longitude;
+    if (!lat || !lon) return;
+    const marker = L.circleMarker([lat, lon], {
       radius: 6,
       fillColor: '#E65100',
       color: '#fff',
@@ -1636,16 +1702,18 @@ function criarEDLMarkers() {
       opacity: 1,
       fillOpacity: 0.9
     }).addTo(map);
+    const nome = point.name || point.nome || '';
+    const bairro = point.bairro || '';
     marker.bindPopup(`
       <div style="font-family:Inter,sans-serif;min-width:200px">
         <div style="font-size:10px;font-weight:700;color:#E65100;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">
           <i class="fas fa-map-pin"></i> EDL - Ponto Estrategico
         </div>
-        <strong style="font-size:13px">${point.name}</strong>
-        <div style="font-size:11px;color:#718096;margin-top:4px">Bairro: ${point.bairro}</div>
+        <strong style="font-size:13px">${nome}</strong>
+        <div style="font-size:11px;color:#718096;margin-top:4px">Bairro: ${bairro}</div>
       </div>
     `);
-    marker.bindTooltip(`PE: ${point.bairro}`, {direction: 'top'});
+    marker.bindTooltip(`PE: ${bairro || nome}`, {direction: 'top'});
     edlMarkers.push(marker);
   });
 }
@@ -1661,13 +1729,17 @@ function toggleEDLs() {
 criarEDLMarkers();
 
 // EDLs Residenciais (319 pontos - cor azul)
-const edlResPoints = [{"n":"Avenida Batalhão Mauá, 2230, Araguari - MG","lat":-18.66987,"lon":-48.197047},{"n":"Rua Aimoré, 280, Araguari - MG","lat":-18.642238,"lon":-48.190183},{"n":"Rua Aimoré, 230, Araguari - MG","lat":-18.647183,"lon":-48.19379},{"n":"Rua Elias Peixoto, 937, Araguari - MG","lat":-18.663681,"lon":-48.198829},{"n":"Rua Circular, 380, Araguari - MG","lat":-18.664673,"lon":-48.200377},{"n":"Rua Coronel Póvoa, 1150, Araguari - MG","lat":-18.663796,"lon":-48.197587},{"n":"Rua Circular, 255, Araguari - MG","lat":-18.664272,"lon":-48.200096},{"n":"Rua Circular, 288, Araguari - MG","lat":-18.665,"lon":-48.200606},{"n":"Rua Elias Peixoto, 1111, Araguari - MG","lat":-18.663683,"lon":-48.19883},{"n":"Avenida Batalhão Mauá, 1683, Araguari - MG","lat":-18.670101,"lon":-48.197209},{"n":"Rua Jaime Gomes, 2153, Araguari - MG","lat":-18.65521,"lon":-48.193397},{"n":"Avenida Batalhão Mauá, 1673, Araguari - MG","lat":-18.66972,"lon":-48.196942},{"n":"Rua Aimoré, 145, Araguari - MG","lat":-18.650621,"lon":-48.190818},{"n":"Rua Aimoré, 114, Araguari - MG","lat":-18.650815,"lon":-48.189712},{"n":"Rua Coronel Póvoa, 1201, Araguari - MG","lat":-18.664661,"lon":-48.198193},{"n":"Rua Aimoré, 451, Araguari - MG","lat":-18.641711,"lon":-48.185575},{"n":"Avenida Minas Gerais, 3500, Araguari - MG","lat":-18.662065,"lon":-48.194143},{"n":"Avenida Batalhão Mauá, 2013, Araguari - MG","lat":-18.669642,"lon":-48.196887},{"n":"Rua Monte Alegre, 250, Araguari - MG","lat":-18.660557,"lon":-48.198471},{"n":"Rua Elias Peixoto, 559, Araguari - MG","lat":-18.662831,"lon":-48.198234},{"n":"Rua Elias Peixoto, 413, Araguari - MG","lat":-18.663398,"lon":-48.198631},{"n":"Avenida Bahia, 181, Araguari - MG","lat":-18.660084,"lon":-48.198731},{"n":"Rua Coronel Póvoa, 395, Araguari - MG","lat":-18.664137,"lon":-48.197827},{"n":"Rua Coronel Póvoa, 510, Araguari - MG","lat":-18.663184,"lon":-48.197159},{"n":"Rua Coronel Póvoa, 553, Araguari - MG","lat":-18.664625,"lon":-48.198168},{"n":"Avenida Bahia, 47, Araguari - MG","lat":-18.65981,"lon":-48.19854},{"n":"Avenida Minas Gerais, 2776, Araguari - MG","lat":-18.661018,"lon":-48.193411},{"n":"Avenida Minas Gerais, 2860, Araguari - MG","lat":-18.6613,"lon":-48.193609},{"n":"Rua Monte Alegre, 40, Araguari - MG","lat":-18.661272,"lon":-48.198972},{"n":"Avenida Minas Gerais, 3060, Araguari - MG","lat":-18.660557,"lon":-48.193088},{"n":"Rua João Araujo, 60, Araguari - MG","lat":-18.663541,"lon":-48.19804},{"n":"Rua Coronel Póvoa, 686, Araguari - MG","lat":-18.663683,"lon":-48.197509},{"n":"Rua Tenente Augusto, 255, Araguari - MG","lat":-18.642964,"lon":-48.173097},{"n":"Rua Tenente Augusto, 170, Araguari - MG","lat":-18.642162,"lon":-48.172535},{"n":"Rua Tenente Augusto, 31, Araguari - MG","lat":-18.643247,"lon":-48.173294},{"n":"Rua Vereador Nicolino Caetano, 100, Araguari - MG","lat":-18.645462,"lon":-48.171896},{"n":"Rua Vereador Nicolino Caetano, 155, Araguari - MG","lat":-18.645933,"lon":-48.172226},{"n":"Rua Vereador Nicolino Caetano, 260, Araguari - MG","lat":-18.644632,"lon":-48.171315},{"n":"Rua Marden Barbosa, 545, Araguari - MG","lat":-18.64702,"lon":-48.172776},{"n":"Rua Marden Barbosa, 470, Araguari - MG","lat":-18.645615,"lon":-48.171792},{"n":"Rua Marden Barbosa, 365, Araguari - MG","lat":-18.646474,"lon":-48.172394},{"n":"Praça Antonio Marcelino, S/N, Araguari - MG","lat":-18.639069,"lon":-48.178169},{"n":"Rua Djalma Luiz Rocha, 321, Paraíso, Araguari - MG","lat":-18.639115,"lon":-48.178751},{"n":"Rua Djalma Luiz Rocha, 252, Paraíso, Araguari - MG","lat":-18.638557,"lon":-48.178361},{"n":"Rua Djalma Luiz Rocha, 159, Paraíso, Araguari - MG","lat":-18.638111,"lon":-48.178048},{"n":"Rua Djalma Luiz Rocha, 60, Paraíso, Araguari - MG","lat":-18.639457,"lon":-48.17899},{"n":"Rua Duque de Caxias, 601 (Fundos), Paraíso, Aragua","lat":-18.636265,"lon":-48.18008},{"n":"Rua Duque de Caxias, 670, Paraíso, Araguari - MG","lat":-18.636937,"lon":-48.18055},{"n":"Rua Dona Celia Teresinha, 15, Paraíso, Araguari - ","lat":-18.637756,"lon":-48.182436},{"n":"Rua Dona Celia Teresinha, 96, Paraíso, Araguari - ","lat":-18.647141,"lon":-48.186682},{"n":"Rua Dona Celia Teresinha, 215, Paraíso, Araguari -","lat":-18.645399,"lon":-48.189444},{"n":"Rua Dona Celia Teresinha, 274, Paraíso, Araguari -","lat":-18.640789,"lon":-48.196779},{"n":"Rua 15 de Agosto, 45, Araguari - MG","lat":-18.654118,"lon":-48.189508},{"n":"Rua 15 de Agosto, 100, Araguari - MG","lat":-18.639885,"lon":-48.188216},{"n":"Rua 15 de Agosto, 215, Araguari - MG","lat":-18.646851,"lon":-48.199516},{"n":"Rua 15 de Agosto, 374, Araguari - MG","lat":-18.644651,"lon":-48.191396},{"n":"Rua Oito de Maio, 399, Araguari - MG","lat":-18.638615,"lon":-48.198869},{"n":"Rua Oito de Maio, 328, Araguari - MG","lat":-18.636817,"lon":-48.19761},{"n":"Rua Oito de Maio, 273, Araguari - MG","lat":-18.63693,"lon":-48.19769},{"n":"Rua Brejo Alegre, 309, Araguari - MG","lat":-18.637251,"lon":-48.204482},{"n":"Rua Brejo Alegre, 250, Araguari - MG","lat":-18.636185,"lon":-48.203736},{"n":"Rua Pernambuco, 45, Araguari - MG","lat":-18.672011,"lon":-48.180808},{"n":"Rua Pernambuco, 40, Araguari - MG","lat":-18.670929,"lon":-48.180051},{"n":"Rua Brejo Alegre, 415, Araguari - MG","lat":-18.636251,"lon":-48.203782},{"n":"Rua Tocantins, 50, Araguari - MG","lat":-18.658105,"lon":-48.207805},{"n":"Rua Tocantins, 125, Araguari - MG","lat":-18.657188,"lon":-48.207163},{"n":"Rua Floriano Peixoto, 1410, Araguari - MG","lat":-18.640161,"lon":-48.195763},{"n":"Rua Floriano Peixoto, 1661, Araguari - MG","lat":-18.638969,"lon":-48.194929},{"n":"Rua das Araras, 191, Araguari - MG","lat":-18.637792,"lon":-48.203028},{"n":"Rua Benjamin Constant, 187, Araguari - MG","lat":-18.652232,"lon":-48.197517},{"n":"Rua Benjamin Constant, 37, Araguari - MG","lat":-18.636433,"lon":-48.197058},{"n":"Rua Professor Lourdes Naves, 750, Araguari - MG","lat":-18.635308,"lon":-48.186743},{"n":"Rua Cascalho Rico, 290, Araguari - MG","lat":-18.632442,"lon":-48.196064},{"n":"Rua Cascalho Rico, 245, Araguari - MG","lat":-18.631566,"lon":-48.195451},{"n":"Rua Rio Grande do Sul, 164, Araguari - MG","lat":-18.637912,"lon":-48.19415},{"n":"Rua Rio Grande do Sul, 321, Araguari - MG","lat":-18.638096,"lon":-48.194279},{"n":"Rua Rio Grande do Sul, 390, Araguari - MG","lat":-18.63674,"lon":-48.19333},{"n":"Rua Rio Grande do Sul, 515/1, Araguari - MG","lat":-18.637444,"lon":-48.193822},{"n":"Rua da Mata, 180, Araguari - MG","lat":-18.635816,"lon":-48.182724},{"n":"Rua da Mata, 231, Araguari - MG","lat":-18.635581,"lon":-48.18256},{"n":"Rua da Mata, 330, Araguari - MG","lat":-18.635859,"lon":-48.182754},{"n":"Rua Benjamin Constant, 705, Araguari - MG","lat":-18.635041,"lon":-48.181613},{"n":"Rua Duque de Caxias, 1020, Araguari - MG","lat":-18.636496,"lon":-48.180241},{"n":"Avenida da Saudade, 194, Araguari - MG","lat":-18.640305,"lon":-48.188178},{"n":"Avenida da Saudade, 141, Araguari - MG","lat":-18.640872,"lon":-48.188575},{"n":"Avenida da Saudade, 333, Araguari - MG","lat":-18.640474,"lon":-48.188296},{"n":"Rua Duque de Caxias, 955, Araguari - MG","lat":-18.636358,"lon":-48.180145},{"n":"Rua Duque de Caxias, 1125, Araguari - MG","lat":-18.637424,"lon":-48.180891},{"n":"Rua Venezuela, 228, Araguari - MG","lat":-18.636307,"lon":-48.199691},{"n":"Rua Venezuela, 366, Araguari - MG","lat":-18.636443,"lon":-48.199786},{"n":"Rua Venezuela, 327, Araguari - MG","lat":-18.635456,"lon":-48.199095},{"n":"Rua União, 295, Araguari - MG","lat":-18.634252,"lon":-48.197502},{"n":"Rua João Rolo, 50, Araguari - MG","lat":-18.652234,"lon":-48.194339},{"n":"Rua Pernambuco, 92, Araguari - MG","lat":-18.67104,"lon":-48.180129},{"n":"Rua Pernambuco, 153, Araguari - MG","lat":-18.672669,"lon":-48.181269},{"n":"Rua Pernambuco, 200, Araguari - MG","lat":-18.672198,"lon":-48.180939},{"n":"Rua Alvorada, 132, Araguari - MG","lat":-18.634854,"lon":-48.204301},{"n":"Rua Alvorada, 61, Araguari - MG","lat":-18.635139,"lon":-48.204501},{"n":"Rua Bernardo Saião, 210, Araguari - MG","lat":-18.646315,"lon":-48.19241},{"n":"Rua Rialma, 355, Araguari - MG","lat":-18.667353,"lon":-48.209609},{"n":"Rua Corumbá, 401, Araguari - MG","lat":-18.664293,"lon":-48.211097},{"n":"Rua Araguaia, 587, Araguari - MG","lat":-18.65873,"lon":-48.206937},{"n":"Alameda Eugenio Nasciutti, 1190, Araguari - MG","lat":-18.665597,"lon":-48.208024},{"n":"Alameda Eugenio Nasciutti, 1230, Araguari - MG","lat":-18.666615,"lon":-48.208736},{"n":"Alameda Eugenio Nasciutti, 1360, Araguari - MG","lat":-18.666303,"lon":-48.208517},{"n":"Alameda Eugenio Nasciutti, 1280, Araguari - MG","lat":-18.666511,"lon":-48.208663},{"n":"Rua Emboabas, 355, Araguari - MG","lat":-18.666976,"lon":-48.207445},{"n":"Rua Niquelandia, 879, Araguari - MG","lat":-18.663385,"lon":-48.207774},{"n":"Rua Araguaia, 721, Araguari - MG","lat":-18.657203,"lon":-48.205868},{"n":"Rua Meia Ponte, 99, Araguari - MG","lat":-18.666725,"lon":-48.209342},{"n":"Rua Meia Ponte, 40, Araguari - MG","lat":-18.665987,"lon":-48.208826},{"n":"Rua Meia Ponte, 78, Araguari - MG","lat":-18.665775,"lon":-48.208677},{"n":"Rua Meia Ponte, 281, Araguari - MG","lat":-18.664984,"lon":-48.208124},{"n":"Rua Meia Ponte, 350, Araguari - MG","lat":-18.666395,"lon":-48.209111},{"n":"Rua Meia Ponte, 421, Araguari - MG","lat":-18.66591,"lon":-48.208772},{"n":"Rua Israel Pinheiro, 1785, Araguari - MG","lat":-18.657869,"lon":-48.209903},{"n":"Rua Israel Pinheiro, 1850, Araguari - MG","lat":-18.658783,"lon":-48.210543},{"n":"Rua Meia Ponte, 11, Araguari - MG","lat":-18.665213,"lon":-48.208284},{"n":"Rua Emboabas, 115, Araguari - MG","lat":-18.666792,"lon":-48.207316},{"n":"Rua Emboabas, 195, Araguari - MG","lat":-18.667904,"lon":-48.208095},{"n":"Rua Niquelandia, 1275, Araguari - MG","lat":-18.66428,"lon":-48.2084},{"n":"Rua Niquelandia, 1325, Araguari - MG","lat":-18.664109,"lon":-48.208281},{"n":"Rua Niquelandia, 1155, Araguari - MG","lat":-18.663119,"lon":-48.207588},{"n":"Rua Niquelandia, 1205, Araguari - MG","lat":-18.664519,"lon":-48.208568},{"n":"Rua Niquelandia, 1235, Araguari - MG","lat":-18.664179,"lon":-48.20833},{"n":"Rua Bernardo Sayão, 401, Araguari - MG","lat":-18.667563,"lon":-48.208702},{"n":"Alameda Eugenio Nasciutti, 1350, Araguari - MG","lat":-18.665221,"lon":-48.20776},{"n":"Rua Aroeira, 109, São Sebastião, Araguari - MG","lat":-18.639127,"lon":-48.19211},{"n":"Rua Castanheira, 90, São Sebastião, Araguari - MG","lat":-18.641391,"lon":-48.182058},{"n":"Rua Castanheira, 193, São Sebastião, Araguari - MG","lat":-18.646949,"lon":-48.194435},{"n":"Rua dos Carvalhos, 108, São Sebastião, Araguari - ","lat":-18.625977,"lon":-48.219247},{"n":"Rua Guatambu, 168, São Sebastião, Araguari - MG","lat":-18.654765,"lon":-48.180078},{"n":"Rua dos Carvalhos, 346, São Sebastião, Araguari - ","lat":-18.625752,"lon":-48.219089},{"n":"Rua Oiti, 349, São Sebastião, Araguari - MG","lat":-18.654712,"lon":-48.196867},{"n":"Rua dos Angicos, 303, São Sebastião, Araguari - MG","lat":-18.630837,"lon":-48.213285},{"n":"Rua dos Angicos, 410, São Sebastião, Araguari - MG","lat":-18.630508,"lon":-48.213055},{"n":"Rua dos Angicos, 649, São Sebastião, Araguari - MG","lat":-18.630226,"lon":-48.212858},{"n":"Rua das Nogueiras, 677, São Sebastião, Araguari - ","lat":-18.630683,"lon":-48.213397},{"n":"Rua das Nogueiras, 570, São Sebastião, Araguari - ","lat":-18.631721,"lon":-48.214123},{"n":"Rua dos Tamburis, 910, São Sebastião, Araguari - M","lat":-18.631798,"lon":-48.213619},{"n":"Rua dos Tamburis, 611, São Sebastião, Araguari - M","lat":-18.631828,"lon":-48.21364},{"n":"Rua dos Buritis, 225, São Sebastião, Araguari - MG","lat":-18.633768,"lon":-48.216714},{"n":"Rua dos Tamburis, 279, São Sebastião, Araguari - M","lat":-18.632329,"lon":-48.213991},{"n":"Rua dos Tamburis, 160, São Sebastião, Araguari - M","lat":-18.632795,"lon":-48.214317},{"n":"Rua das Nogueiras, 140, São Sebastião, Araguari - ","lat":-18.632236,"lon":-48.214484},{"n":"Rua das Nogueiras, 223, São Sebastião, Araguari - ","lat":-18.630452,"lon":-48.213235},{"n":"Rua dos Angicos, 204, São Sebastião, Araguari - MG","lat":-18.631463,"lon":-48.213724},{"n":"Rua quatro, 449, Independência, Araguari - MG","lat":-18.639084,"lon":-48.214965},{"n":"Rua Doutor Roberto Santos Laureano, 290, Independê","lat":-18.634985,"lon":-48.207564},{"n":"Rua Maurilio Piretti, 317, Independência, Araguari","lat":-18.641622,"lon":-48.196989},{"n":"Rua Maurilio Piretti, 446, Independência, Araguari","lat":-18.647687,"lon":-48.181114},{"n":"Rua Dr Hugo Aguiar, 203, Independência, Araguari -","lat":-18.632861,"lon":-48.203548},{"n":"Rua Dr Hugo Aguiar, 350, Independência, Araguari -","lat":-18.6325,"lon":-48.203295},{"n":"Rua Dr Hugo Aguiar, 417, Independência, Araguari -","lat":-18.632201,"lon":-48.203086},{"n":"Rua Ventania, 300, Independência, Araguari - MG","lat":-18.63584,"lon":-48.204261},{"n":"Rua Estados Unidos, 316, Independência, Araguari -","lat":-18.631801,"lon":-48.203474},{"n":"Rua Estados Unidos, 465, Independência, Araguari -","lat":-18.631615,"lon":-48.203344},{"n":"Rua Estados Unidos, 615, Independência, Araguari -","lat":-18.631124,"lon":-48.203},{"n":"Rua Nove, 121, Independência, Araguari - MG","lat":-18.639593,"lon":-48.222269},{"n":"Rua Nove, 320, Independência, Araguari - MG","lat":-18.637957,"lon":-48.221124},{"n":"Rua Alvorada, 611-1, Independência, Araguari - MG","lat":-18.63491,"lon":-48.20434},{"n":"Rua Brejo Alegre, 150, Independência, Araguari - M","lat":-18.637033,"lon":-48.204329},{"n":"Rua Brejo Alegre, 55, Independência, Araguari - MG","lat":-18.63625,"lon":-48.203782},{"n":"Rua Brejo Alegre, 458, Independência, Araguari - M","lat":-18.636968,"lon":-48.204284},{"n":"Rua Brejo Alegre, 243, Independência, Araguari - M","lat":-18.636907,"lon":-48.204241},{"n":"Rua Estados Unidos, 120, Independência, Araguari -","lat":-18.631982,"lon":-48.203601},{"n":"Rua um, 143, Independência, Araguari - MG","lat":-18.636473,"lon":-48.213498},{"n":"Avenida Brasil, 633, Araguari - MG","lat":-18.662228,"lon":-48.212165},{"n":"Rua José Joaquim de Souza, 500, Araguari - MG","lat":-18.655069,"lon":-48.209479},{"n":"Rua José Joaquim de Souza, 460, Araguari - MG","lat":-18.654842,"lon":-48.20932},{"n":"Rua José Joaquim de Souza, 410, Araguari - MG","lat":-18.655225,"lon":-48.209588},{"n":"Rua José Joaquim de Souza, 355, Araguari - MG","lat":-18.655355,"lon":-48.209679},{"n":"Rua José Joaquim de Souza, 170, Araguari - MG","lat":-18.655918,"lon":-48.210073},{"n":"Rua José Joaquim de Souza, 295, Araguari - MG","lat":-18.655933,"lon":-48.210084},{"n":"Rua José Joaquim de Souza,, 110, Araguari - MG","lat":-18.654017,"lon":-48.208743},{"n":"Rua José Joaquim de Souza, 60, Araguari - MG","lat":-18.65509,"lon":-48.209493},{"n":"Rua José Joaquim de Souza,, 55, Araguari - MG","lat":-18.65492,"lon":-48.209375},{"n":"Rua José Joaquim de Souza,, 32, Araguari - MG","lat":-18.654789,"lon":-48.209283},{"n":"Rua William Peixoto, 399, Araguari - MG","lat":-18.643747,"lon":-48.194523},{"n":"Rua William Peixoto, 773, Araguari - MG","lat":-18.639579,"lon":-48.181174},{"n":"Rua William Peixoto, 710, Araguari - MG","lat":-18.643182,"lon":-48.187851},{"n":"Rua William Peixoto, 430, Araguari - MG","lat":-18.641784,"lon":-48.196313},{"n":"Rua William Peixoto, 330, Araguari - MG","lat":-18.650457,"lon":-48.191343},{"n":"Rua William Peixoto, 851, Araguari - MG","lat":-18.651607,"lon":-48.187485},{"n":"Rua William Peixoto, 725, Araguari - MG","lat":-18.63871,"lon":-48.197414},{"n":"Rua Guará, 60, Araguari - MG","lat":-18.655136,"lon":-48.209441},{"n":"Rua Guará, 59 (Casa C), Araguari - MG","lat":-18.654779,"lon":-48.209191},{"n":"Rua Jacyr Guedes da Costa, 221, Araguari - MG","lat":-18.652634,"lon":-48.210447},{"n":"Rua Jacyr Guedes da Costa, 150, Araguari - MG","lat":-18.654198,"lon":-48.211542},{"n":"Rua Emiliano Gustavo, 120, Araguari - MG","lat":-18.652517,"lon":-48.211672},{"n":"Rua Emiliano Gustavo, 200, Araguari - MG","lat":-18.652024,"lon":-48.211327},{"n":"Rua Emiliano Gustavo, 340, Araguari - MG","lat":-18.652097,"lon":-48.211378},{"n":"Rua Belizário Cunha, 330, Araguari - MG","lat":-18.648286,"lon":-48.199699},{"n":"Rua Belizário Cunha, 431, Araguari - MG","lat":-18.635636,"lon":-48.180897},{"n":"Rua Belizário Cunha, 22, Araguari - MG","lat":-18.654992,"lon":-48.181293},{"n":"Rua Belizário Cunha, 120, Araguari - MG","lat":-18.641071,"lon":-48.19412},{"n":"Rua Belizário Cunha, 155, Araguari - MG","lat":-18.647419,"lon":-48.185545},{"n":"Rua Belizário Cunha, 220, Araguari - MG","lat":-18.650588,"lon":-48.184334},{"n":"Rua Do Contorno, 21, Araguari - MG","lat":-18.656788,"lon":-48.210069},{"n":"Rua Do Contorno, 131-1, Araguari - MG","lat":-18.655027,"lon":-48.208836},{"n":"Rua Do Contorno, 270, Araguari - MG","lat":-18.65638,"lon":-48.209783},{"n":"Rua Do Contorno, 367-1, Araguari - MG","lat":-18.655371,"lon":-48.209077},{"n":"Rua Humberto Tadeu Jordão, 1241, Araguari - MG","lat":-18.640458,"lon":-48.203298},{"n":"Rua Humberto Tadeu Jordão., S/N, Araguari - MG","lat":-18.639211,"lon":-48.202425},{"n":"Rua Humberto Tadeu Jordão, 930, Araguari - MG","lat":-18.640277,"lon":-48.203171},{"n":"Rua Humberto Tadeu Jordão, 745, Araguari - MG","lat":-18.640148,"lon":-48.203081},{"n":"Rua Humberto Tadeu Jordão, 596, Araguari - MG","lat":-18.64016,"lon":-48.203089},{"n":"Rua Humberto Tadeu Jordão, 459, Araguari - MG","lat":-18.63966,"lon":-48.202739},{"n":"Rua Humberto Tadeu Jordão, 990, Araguari - MG","lat":-18.640459,"lon":-48.203299},{"n":"Rua Humberto Tadeu Jordão, 1116, Araguari - MG","lat":-18.638884,"lon":-48.202196},{"n":"Rua Humberto Tadeu Jordão, 844, Araguari - MG","lat":-18.638512,"lon":-48.201935},{"n":"Rua Humberto Tadeu Jordão, 724, Araguari - MG","lat":-18.639619,"lon":-48.202711},{"n":"Rua Humberto Tadeu Jordão, 553, Araguari - MG","lat":-18.639878,"lon":-48.202892},{"n":"Rua Humberto Tadeu Jordão, 18, Araguari - MG","lat":-18.639993,"lon":-48.202973},{"n":"Rua Sebastião Vogado, 405, Araguari - MG","lat":-18.640474,"lon":-48.210418},{"n":"Rua Sebastião Vogado, 311, Araguari - MG","lat":-18.639406,"lon":-48.209671},{"n":"Rua Sebastião Vogado, 210, Araguari - MG","lat":-18.639427,"lon":-48.209685},{"n":"Rua Sebastião Vogado, 152, Araguari - MG","lat":-18.639534,"lon":-48.20976},{"n":"Rua Sebastião Vogado, 780, Araguari - MG","lat":-18.63865,"lon":-48.209141},{"n":"Rua Sebastião Vogado, 751, Araguari - MG","lat":-18.640445,"lon":-48.210398},{"n":"Rua Sebastião Vogado, 700, Araguari - MG","lat":-18.640048,"lon":-48.21012},{"n":"Rua Sebastião Vogado, 651, Araguari - MG","lat":-18.640327,"lon":-48.210316},{"n":"Rua Sebastião Vogado, 624, Araguari - MG","lat":-18.638792,"lon":-48.209241},{"n":"Rua Sebastião Vogado, 505, Araguari - MG","lat":-18.640436,"lon":-48.210392},{"n":"Rua Sebastião Vogado, 300, Araguari - MG","lat":-18.638512,"lon":-48.209045},{"n":"Rua Sebastião Vogado, 165, Araguari - MG","lat":-18.639756,"lon":-48.209916},{"n":"Rua Sebastião Vogado, 20, Araguari - MG","lat":-18.639285,"lon":-48.209586},{"n":"Rua Floriano Peixoto, 600, Araguari - MG","lat":-18.639067,"lon":-48.194998},{"n":"Rua Floriano Peixoto, 1706, Araguari - MG","lat":-18.639911,"lon":-48.195589},{"n":"Rua das Araras, 246, Araguari - MG","lat":-18.638657,"lon":-48.203634},{"n":"Rua Nader Cury, 150, Araguari - MG","lat":-18.654347,"lon":-48.19913},{"n":"Rua Natal Mujalli, 231, Araguari - MG","lat":-18.656707,"lon":-48.196156},{"n":"Rua Natal Mujalli, 185, Araguari - MG","lat":-18.657733,"lon":-48.196875},{"n":"Rua Natal Mujalli, 142, Araguari - MG","lat":-18.657349,"lon":-48.196606},{"n":"Rua Rua Doutor Alberto Moreira, 95, Araguari - MG","lat":-18.638563,"lon":-48.18705},{"n":"Rua Rua Doutor Alberto Moreira, 401, Araguari - MG","lat":-18.647117,"lon":-48.183042},{"n":"Rua Jaime Gomes, 970, Araguari - MG","lat":-18.653972,"lon":-48.19253},{"n":"Rua Nader Cury, 57, Araguari - MG","lat":-18.654192,"lon":-48.199021},{"n":"Praça Terezinha França de Lima, 170, Araguari - MG","lat":-18.658244,"lon":-48.193743},{"n":"Praça Terezinha França de Lima, 256, Araguari - MG","lat":-18.658116,"lon":-48.193653},{"n":"Rua Jaime Gomes, 991, Araguari - MG","lat":-18.654004,"lon":-48.192553},{"n":"Rua Joaquim Barbosa, 1241, Araguari - MG","lat":-18.641937,"lon":-48.199059},{"n":"Rua Nathalia Negrão, 87, Araguari - MG","lat":-18.653113,"lon":-48.18833},{"n":"Rua Nathalia Negrão, 36, Araguari - MG","lat":-18.641797,"lon":-48.194122},{"n":"Rua Guanabara, 520, Araguari - MG","lat":-18.673332,"lon":-48.174141},{"n":"Rua Bela Vista, 125, Araguari - MG","lat":-18.666548,"lon":-48.176017},{"n":"Tv. Coromandeu, 10, Amorim, Araguari - Minas Gerai","lat":-18.637572,"lon":-48.181056},{"n":"Tv. Coromandeu, 125, Araguari - MG","lat":-18.638164,"lon":-48.196105},{"n":"Rua Humaita, 58, Araguari - MG","lat":-18.660908,"lon":-48.184069},{"n":"Rua Padre Nicassio, 42, Araguari - MG","lat":-18.650456,"lon":-48.186919},{"n":"Rua Joaquim Barbosa, 293, Araguari - MG","lat":-18.648915,"lon":-48.195203},{"n":"Rua Arlindo Mendes, 20, Araguari - MG","lat":-18.663578,"lon":-48.182351},{"n":"Rua Tamôios, 107, Araguari - MG","lat":-18.659043,"lon":-48.183624},{"n":"Rua Joaquim Barbosa, 145, Araguari - MG","lat":-18.652934,"lon":-48.191474},{"n":"Rua Coromandel, 313, Araguari - MG","lat":-18.628037,"lon":-48.200599},{"n":"Rua Humaita, 12, Araguari - MG","lat":-18.661741,"lon":-48.184652},{"n":"Rua Coromandel, 607, Araguari - MG","lat":-18.626602,"lon":-48.199595},{"n":"Rua Joaquim Barbosa, 331, Araguari - MG","lat":-18.63649,"lon":-48.194376},{"n":"Rua Tamoios, 70, Araguari - MG","lat":-18.659879,"lon":-48.184209},{"n":"Rua Coromandel, 260, Araguari - MG","lat":-18.627245,"lon":-48.200045},{"n":"Rua Cornelia Josefa, 22, Araguari - MG","lat":-18.662161,"lon":-48.182697},{"n":"Rua Coromandel, 499, Araguari - MG","lat":-18.626772,"lon":-48.199713},{"n":"Rua Joaquim Barbosa, 201, Araguari - MG","lat":-18.652531,"lon":-48.188753},{"n":"Rua Arlindo Mendes, 151, Araguari - MG","lat":-18.662553,"lon":-48.181634},{"n":"Rua Arlindo Mendes, 111, Araguari - MG","lat":-18.662565,"lon":-48.181643},{"n":"Rua Coromandel, 417, Araguari - MG","lat":-18.627841,"lon":-48.200462},{"n":"Rua Coromandel, 474, Araguari - MG","lat":-18.626667,"lon":-48.19964},{"n":"Rua Cornelia Josefa, 118, Araguari - MG","lat":-18.661551,"lon":-48.18227},{"n":"Rua Cristo Rei, 105, Araguari - MG","lat":-18.667652,"lon":-48.176332},{"n":"Rua Cristo Rei, 70, Araguari - MG","lat":-18.667441,"lon":-48.176184},{"n":"Rua Cristo Rei, 57, Araguari - MG","lat":-18.66747,"lon":-48.176204},{"n":"Rua Padre Nicacio, 825, Araguari - MG","lat":-18.664454,"lon":-48.179771},{"n":"Rua Padre Nicacio, 825, Araguari - MG","lat":-18.665138,"lon":-48.180249},{"n":"Rua Padre Nicacio, 987, Araguari - MG","lat":-18.665977,"lon":-48.180836},{"n":"Rua Padre Nicacio, 207, Araguari - MG","lat":-18.664923,"lon":-48.180099},{"n":"Rua Brasilia, 64, Araguari - MG","lat":-18.669738,"lon":-48.173096},{"n":"Rua São Salvador, 790, Araguari - MG","lat":-18.662826,"lon":-48.177948},{"n":"Rua São Salvador, 714, Araguari - MG","lat":-18.663657,"lon":-48.17853},{"n":"Rua Iturama, 270, Araguari - MG","lat":-18.663843,"lon":-48.176664},{"n":"Rua Guarani, 83, Araguari - MG","lat":-18.666089,"lon":-48.177771},{"n":"Rua Bonanza, 165, Araguari - MG","lat":-18.662638,"lon":-48.178298},{"n":"Rua Jornalista João Lourenço, 45, Araguari - MG","lat":-18.658838,"lon":-48.200381},{"n":"Rua Jornalista João Lourenço, 64, Araguari - MG","lat":-18.658171,"lon":-48.199914},{"n":"Rua Paissandú, 684, Araguari - MG","lat":-18.656365,"lon":-48.197542},{"n":"Avenida Bahia, 720, Araguari - MG","lat":-18.659691,"lon":-48.198456},{"n":"Avenida Bahia, 780, Araguari - MG","lat":-18.660395,"lon":-48.198949},{"n":"Avenida Coronel Teodolino P. Araújo, 2405, Araguar","lat":-18.654948,"lon":-48.199366},{"n":"Avenida Coronel Teodolino P. Araújo, 2257, Araguar","lat":-18.64428,"lon":-48.184453},{"n":"Rua Carolina Marques, 680, Araguari - MG","lat":-18.659317,"lon":-48.19812},{"n":"Rua Paissandú, 585, Araguari - MG","lat":-18.655843,"lon":-48.197176},{"n":"Rua Paissandú, 641, Araguari - MG","lat":-18.655222,"lon":-48.196742},{"n":"Rua Elias Peixoto, 203 - 1, Araguari - MG","lat":-18.663505,"lon":-48.198705},{"n":"Rua Carolina Marques, 210, Araguari - MG","lat":-18.658042,"lon":-48.197228},{"n":"Rua Carolina Marques, 179, Araguari - MG","lat":-18.659402,"lon":-48.19818},{"n":"Rua Carolina Marques, 218, Araguari - MG","lat":-18.657971,"lon":-48.197179},{"n":"Rua Coronel Povoa, 181, Araguari - MG","lat":-18.663656,"lon":-48.19749},{"n":"Rua Avaré, 137, Araguari - MG","lat":-18.658396,"lon":-48.197813},{"n":"Rua Avaré, 192, Araguari - MG","lat":-18.657023,"lon":-48.196852},{"n":"Rua Elias Peixoto, 132, Araguari - MG","lat":-18.662462,"lon":-48.197975},{"n":"Rua Carolina Marques, 600, Araguari - MG","lat":-18.659515,"lon":-48.19826},{"n":"Rua Eurípedes Barsanufo, 31, Araguari - MG","lat":-18.64298,"lon":-48.190472},{"n":"Rua Eurípedes Barsanufo, 94, Araguari - MG","lat":-18.653336,"lon":-48.182953},{"n":"Avenida Bahia, 600, Araguari - MG","lat":-18.659466,"lon":-48.198299},{"n":"Rua Padre Lafaiete, 1110, Araguari - MG","lat":-18.652465,"lon":-48.196903},{"n":"Rua Carolina Marques, 845, Araguari - MG","lat":-18.658195,"lon":-48.197335},{"n":"Rua Carolina Marques, 1189, Araguari - MG","lat":-18.658165,"lon":-48.197314},{"n":"Rua Olegário Maciel, 1172, Araguari - MG","lat":-18.651724,"lon":-48.197799},{"n":"Rua Olegário Maciel, 1135, Araguari - MG","lat":-18.652178,"lon":-48.198116},{"n":"Rua Avaré, 960, Araguari - MG","lat":-18.657627,"lon":-48.197275},{"n":"Rua Avaré, 835, Araguari - MG","lat":-18.657738,"lon":-48.197353},{"n":"Avenida Batalhão Mauá, 1759, Araguari - MG","lat":-18.670682,"lon":-48.197615},{"n":"Rua João da Cruz, 301, Araguari - MG","lat":-18.660264,"lon":-48.202389},{"n":"Rua João da Cruz, 248 (Fundos), Araguari - MG","lat":-18.659358,"lon":-48.201755},{"n":"Rua João da Cruz, 145, Araguari - MG","lat":-18.660106,"lon":-48.202278},{"n":"Rua João da Cruz, 58, Araguari - MG","lat":-18.659656,"lon":-48.201963},{"n":"Rua João da Cruz, 748, Araguari - MG","lat":-18.659805,"lon":-48.202067},{"n":"Avenida Bahia, 691, Araguari - MG","lat":-18.659328,"lon":-48.198202},{"n":"Avenida Bahia, 834, Araguari - MG","lat":-18.660022,"lon":-48.198689},{"n":"Avenida Batalhão Mauá, 1501, Araguari - MG","lat":-18.66942,"lon":-48.196732}];
+let edlResPoints = [];
 
 let edlResMarkers = [];
 
 function criarEDLResMarkers() {
   edlResPoints.forEach(point => {
-    const marker = L.circleMarker([point.lat, point.lon], {
+    const lat = point.lat || point.latitude;
+    const lon = point.lon || point.longitude;
+    if (!lat || !lon) return;
+    const nome = point.n || point.name || point.nome || '';
+    const marker = L.circleMarker([lat, lon], {
       radius: 4,
       fillColor: '#0288D1',
       color: '#fff',
@@ -1680,7 +1752,7 @@ function criarEDLResMarkers() {
         <div style="font-size:10px;font-weight:700;color:#0288D1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">
           <i class="fas fa-map-pin"></i> EDL - Residencial
         </div>
-        <strong style="font-size:12px">${point.n}</strong>
+        <strong style="font-size:12px">${nome}</strong>
       </div>
     `);
     edlResMarkers.push(marker);
@@ -1880,12 +1952,12 @@ function aplicarFiltros() {
 // Initialize - dados serao carregados via carregarDadosAPI()
 // aplicarFiltros() chamado apos dados carregarem
 
-// Epidemic curve chart
-const curvaLabels = ["SE 01","SE 02","SE 03","SE 04","SE 05","SE 06","SE 07","SE 08","SE 09","SE 10","SE 11","SE 12","SE 13","SE 14","SE 15","SE 16","SE 17","SE 18","SE 19","SE 20"];
-const curvaDengue = [42,43,55,82,89,136,203,254,369,268,313,217,265,259,221,223,240,137,45,1];
-const curvaChik = [3,9,12,25,54,110,174,235,373,386,431,407,326,401,400,387,363,301,107,0];
+// Epidemic curve chart (dados carregados via API)
+let curvaLabels = [];
+let curvaDengue = [];
+let curvaChik = [];
 
-new Chart(document.getElementById('chartVE1'), {
+window.chartVE1Instance = new Chart(document.getElementById('chartVE1'), {
   type: 'line',
   data: {
     labels: curvaLabels,
