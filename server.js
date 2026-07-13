@@ -395,6 +395,30 @@ app.get('/api/geocode-status', authMiddleware, (req, res) => {
   res.json({ total, comCoord, semCoord, percentual: total > 0 ? Math.round(comCoord / total * 100) : 0 });
 });
 
+// Listar EDLs para edicao
+app.get('/api/edls', authMiddleware, (req, res) => {
+  const cat = req.query.categoria || '';
+  const search = req.query.search || '';
+  let query = `SELECT id, categoria, nome, bairro, latitude, longitude FROM edls WHERE 1=1`;
+  const params = [];
+  if (cat) { query += ` AND categoria = ?`; params.push(cat); }
+  if (search) { query += ` AND nome LIKE ?`; params.push(`%${search}%`); }
+  query += ` ORDER BY nome LIMIT 100`;
+  const edls = db.prepare(query).all(...params);
+  res.json(edls);
+});
+
+// Atualizar coordenadas de um EDL
+app.put('/api/edls/:id', authMiddleware, (req, res) => {
+  const { latitude, longitude, bairro } = req.body;
+  const id = req.params.id;
+  if (latitude === undefined || longitude === undefined) return res.status(400).json({ error: 'Latitude e longitude obrigatorios' });
+  db.prepare(`UPDATE edls SET latitude = ?, longitude = ?, bairro = ? WHERE id = ?`).run(latitude, longitude, bairro || '', id);
+  // Regenera dashboard
+  gerarDadosDashboard();
+  res.json({ success: true });
+});
+
 // === ATENCAO PRIMARIA ROUTES ===
 const { stmtsAPS, INDICADORES_APS } = require('./database');
 
