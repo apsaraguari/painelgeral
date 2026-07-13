@@ -395,6 +395,85 @@ app.get('/api/geocode-status', authMiddleware, (req, res) => {
   res.json({ total, comCoord, semCoord, percentual: total > 0 ? Math.round(comCoord / total * 100) : 0 });
 });
 
+// === ATENCAO PRIMARIA ROUTES ===
+const { stmtsAPS, INDICADORES_APS } = require('./database');
+
+// Lista indicadores disponiveis
+app.get('/api/aps/indicadores', authMiddleware, (req, res) => {
+  res.json(INDICADORES_APS);
+});
+
+// Lista unidades de saude
+app.get('/api/aps/unidades', authMiddleware, (req, res) => {
+  const unidades = stmtsAPS.listUnidades.all();
+  res.json(unidades);
+});
+
+// Criar unidade
+app.post('/api/aps/unidades', authMiddleware, (req, res) => {
+  const { nome, tipo } = req.body;
+  if (!nome) return res.status(400).json({ error: 'Nome obrigatorio' });
+  stmtsAPS.insertUnidade.run(nome.trim(), tipo || 'UBS');
+  res.json({ success: true, unidades: stmtsAPS.listUnidades.all() });
+});
+
+// Deletar unidade
+app.delete('/api/aps/unidades/:id', authMiddleware, (req, res) => {
+  stmtsAPS.deleteUnidade.run(req.params.id);
+  res.json({ success: true });
+});
+
+// Salvar indicadores de uma unidade
+app.post('/api/aps/indicadores', authMiddleware, (req, res) => {
+  const { unidade_id, competencia, dados } = req.body;
+  if (!unidade_id || !competencia || !dados) return res.status(400).json({ error: 'Dados incompletos' });
+
+  const saveMany = db.transaction((items) => {
+    for (const item of items) {
+      stmtsAPS.upsertIndicador.run({
+        unidade_id,
+        competencia,
+        indicador: item.indicador,
+        numerador: item.numerador || 0,
+        denominador: item.denominador || 0,
+        meta: item.meta || 0,
+        valor_alcancado: item.denominador > 0 ? ((item.numerador / item.denominador) * 100) : 0,
+        observacao: item.observacao || '',
+        usuario: req.user.username
+      });
+    }
+  });
+
+  saveMany(dados);
+  res.json({ success: true, message: `Indicadores salvos para competencia ${competencia}` });
+});
+
+// Buscar indicadores por competencia
+app.get('/api/aps/dados/:competencia', authMiddleware, (req, res) => {
+  const indicadores = stmtsAPS.getIndicadores.all(req.params.competencia);
+  res.json(indicadores);
+});
+
+// Buscar indicadores de uma unidade em uma competencia
+app.get('/api/aps/dados/:competencia/:unidadeId', authMiddleware, (req, res) => {
+  const indicadores = stmtsAPS.getIndicadoresByUnidade.all(req.params.unidadeId, req.params.competencia);
+  res.json(indicadores);
+});
+
+// Lista competencias disponiveis
+app.get('/api/aps/competencias', authMiddleware, (req, res) => {
+  const competencias = stmtsAPS.getAllCompetencias.all();
+  res.json(competencias.map(c => c.competencia));
+});
+
+// Resumo por indicador (para dashboard publico)
+app.get('/api/aps/resumo/:competencia', (req, res) => {
+  const resumo = stmtsAPS.getResumoIndicadores.all(req.params.competencia);
+  const unidades = stmtsAPS.listUnidades.all();
+  const indicadores = stmtsAPS.getIndicadores.all(req.params.competencia);
+  res.json({ resumo, unidades, indicadores, definicoes: INDICADORES_APS });
+});
+
 // Serve admin panel
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));

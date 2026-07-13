@@ -258,8 +258,61 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
     <!-- PAGE: ATENCAO PRIMARIA -->
     <div class="admin-page" id="page-atencao">
-      <div class="admin-header"><h2><i class="fas fa-hospital"></i> Atencao Primaria</h2></div>
-      <div class="admin-card"><h3><i class="fas fa-info-circle"></i> Em desenvolvimento</h3><p style="font-size:13px;color:var(--text-dim)">Upload de dados de producao UBS, consultas e visitas domiciliares sera implementado em breve.</p></div>
+      <div class="admin-header"><h2><i class="fas fa-hospital"></i> Atencao Primaria - Indicadores Previne Brasil</h2></div>
+
+      <!-- Gerenciar Unidades -->
+      <div class="admin-card" style="margin-bottom:20px">
+        <h3><i class="fas fa-clinic-medical"></i> Unidades de Saude</h3>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" class="form-input" id="nova-unidade" placeholder="Nome da UBS" style="flex:1;padding:10px;background:var(--bg)">
+          <select class="form-input" id="tipo-unidade" style="width:120px;padding:10px;background:var(--bg)">
+            <option value="UBS">UBS</option><option value="ESF">ESF</option><option value="UPA">UPA</option>
+          </select>
+          <button class="btn-sm accent" onclick="addUnidade()"><i class="fas fa-plus"></i> Adicionar</button>
+        </div>
+        <div id="lista-unidades" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
+
+      <!-- Formulario Indicadores -->
+      <div class="admin-card">
+        <h3><i class="fas fa-edit"></i> Lancar Indicadores (Notas Tecnicas C2-C7)</h3>
+        <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">Competencia (Quadrimestre)</label>
+            <select class="form-input" id="aps-competencia" style="padding:10px;background:var(--bg)">
+              <option value="2026-Q1">2026 - 1o Quadrimestre (Jan-Abr)</option>
+              <option value="2026-Q2">2026 - 2o Quadrimestre (Mai-Ago)</option>
+              <option value="2026-Q3">2026 - 3o Quadrimestre (Set-Dez)</option>
+              <option value="2025-Q3">2025 - 3o Quadrimestre</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">Unidade</label>
+            <select class="form-input" id="aps-unidade" style="padding:10px;background:var(--bg)" onchange="loadIndicadoresUnidade()">
+              <option value="">Selecione a unidade</option>
+            </select>
+          </div>
+          <div style="align-self:flex-end"><button class="btn-sm accent" onclick="loadIndicadoresUnidade()"><i class="fas fa-sync"></i> Carregar</button></div>
+        </div>
+
+        <div id="form-indicadores" style="display:none">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+              <tr style="background:var(--bg)">
+                <th style="padding:10px;text-align:left;color:var(--text-dim)">Indicador</th>
+                <th style="padding:10px;width:90px;color:var(--text-dim)">Numerador</th>
+                <th style="padding:10px;width:90px;color:var(--text-dim)">Denominador</th>
+                <th style="padding:10px;width:80px;color:var(--text-dim)">% Alcancado</th>
+                <th style="padding:10px;width:60px;color:var(--text-dim)">Meta</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-indicadores"></tbody>
+          </table>
+          <div style="margin-top:16px;display:flex;gap:10px">
+            <button class="btn-sm accent" onclick="salvarIndicadores()" style="background:var(--accent);color:#000;border-color:var(--accent)"><i class="fas fa-save"></i> Salvar Indicadores</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- PAGE: VIG. SANITARIA -->
@@ -456,7 +509,134 @@ document.querySelectorAll('.upload-zone').forEach(zone => {
 
 // === INIT ===
 checkAuth();
-setInterval(loadGeoStatus, 10000); // poll geocoding progress
+setInterval(loadGeoStatus, 10000);
+</script>
+
+<script>
+// === ATENCAO PRIMARIA ===
+let indicadoresAPS = [];
+let unidadesAPS = [];
+
+async function loadUnidades() {
+  try {
+    const res = await fetch('/api/aps/unidades');
+    if (!res.ok) return;
+    unidadesAPS = await res.json();
+    // Update lista visual
+    const lista = document.getElementById('lista-unidades');
+    lista.innerHTML = unidadesAPS.map(u => 
+      `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg);border-radius:6px;font-size:11px">
+        <i class="fas fa-hospital" style="color:var(--accent)"></i>${u.nome}
+        <button onclick="removeUnidade(${u.id})" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:10px"><i class="fas fa-times"></i></button>
+      </span>`
+    ).join('');
+    // Update select
+    const sel = document.getElementById('aps-unidade');
+    sel.innerHTML = '<option value="">Selecione a unidade</option>' + unidadesAPS.map(u => `<option value="${u.id}">${u.nome}</option>`).join('');
+  } catch {}
+}
+
+async function addUnidade() {
+  const nome = document.getElementById('nova-unidade').value.trim();
+  const tipo = document.getElementById('tipo-unidade').value;
+  if (!nome) return;
+  await fetch('/api/aps/unidades', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nome,tipo}) });
+  document.getElementById('nova-unidade').value = '';
+  showToast('Unidade adicionada','success');
+  loadUnidades();
+}
+
+async function removeUnidade(id) {
+  if (!confirm('Remover unidade?')) return;
+  await fetch('/api/aps/unidades/'+id, {method:'DELETE'});
+  loadUnidades();
+}
+
+async function loadIndicadoresDefinicoes() {
+  try {
+    const res = await fetch('/api/aps/indicadores');
+    if (res.ok) indicadoresAPS = await res.json();
+  } catch {}
+}
+
+async function loadIndicadoresUnidade() {
+  const unidadeId = document.getElementById('aps-unidade').value;
+  const competencia = document.getElementById('aps-competencia').value;
+  if (!unidadeId) { document.getElementById('form-indicadores').style.display='none'; return; }
+
+  document.getElementById('form-indicadores').style.display='block';
+
+  // Load existing data for this unit/period
+  let existentes = {};
+  try {
+    const res = await fetch(`/api/aps/dados/${competencia}/${unidadeId}`);
+    if (res.ok) {
+      const data = await res.json();
+      data.forEach(d => { existentes[d.indicador] = d; });
+    }
+  } catch {}
+
+  // Build form
+  const tbody = document.getElementById('tbody-indicadores');
+  tbody.innerHTML = indicadoresAPS.map(ind => {
+    const exist = existentes[ind.codigo] || {};
+    const num = exist.numerador || '';
+    const den = exist.denominador || '';
+    const pct = exist.valor_alcancado ? exist.valor_alcancado.toFixed(1) : '--';
+    const cor = exist.valor_alcancado >= ind.meta ? 'var(--accent)' : exist.valor_alcancado > 0 ? 'var(--warning)' : 'var(--text-dim)';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px"><strong style="color:var(--info)">${ind.codigo}</strong> ${ind.nome}</td>
+      <td style="padding:10px"><input type="number" class="form-input ind-num" data-cod="${ind.codigo}" value="${num}" style="padding:8px;background:var(--bg);width:80px" oninput="calcPct(this)"></td>
+      <td style="padding:10px"><input type="number" class="form-input ind-den" data-cod="${ind.codigo}" value="${den}" style="padding:8px;background:var(--bg);width:80px" oninput="calcPct(this)"></td>
+      <td style="padding:10px;font-weight:700;color:${cor}" id="pct-${ind.codigo}">${pct}%</td>
+      <td style="padding:10px;color:var(--text-dim)">${ind.meta}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function calcPct(input) {
+  const cod = input.dataset.cod;
+  const num = parseInt(document.querySelector(`.ind-num[data-cod="${cod}"]`).value) || 0;
+  const den = parseInt(document.querySelector(`.ind-den[data-cod="${cod}"]`).value) || 0;
+  const pct = den > 0 ? ((num/den)*100).toFixed(1) : '--';
+  const meta = indicadoresAPS.find(i => i.codigo === cod)?.meta || 0;
+  const el = document.getElementById('pct-'+cod);
+  el.textContent = pct + '%';
+  el.style.color = parseFloat(pct) >= meta ? 'var(--accent)' : parseFloat(pct) > 0 ? 'var(--warning)' : 'var(--text-dim)';
+}
+
+async function salvarIndicadores() {
+  const unidadeId = document.getElementById('aps-unidade').value;
+  const competencia = document.getElementById('aps-competencia').value;
+  if (!unidadeId) return showToast('Selecione uma unidade','error');
+
+  const dados = indicadoresAPS.map(ind => ({
+    indicador: ind.codigo,
+    numerador: parseInt(document.querySelector(`.ind-num[data-cod="${ind.codigo}"]`).value) || 0,
+    denominador: parseInt(document.querySelector(`.ind-den[data-cod="${ind.codigo}"]`).value) || 0,
+    meta: ind.meta
+  }));
+
+  try {
+    const res = await fetch('/api/aps/indicadores', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ unidade_id: unidadeId, competencia, dados })
+    });
+    const data = await res.json();
+    if (res.ok) showToast(data.message,'success');
+    else showToast(data.error,'error');
+  } catch(e) { showToast('Erro ao salvar','error'); }
+}
+
+// Load APS data when showing that page
+const origShowPage = showPage;
+function showPage(page) {
+  document.querySelectorAll('.admin-page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if (event && event.currentTarget) event.currentTarget.classList.add('active');
+  if (page === 'atencao') { loadUnidades(); loadIndicadoresDefinicoes(); }
+}
 </script>
 </body>
 </html>

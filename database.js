@@ -466,3 +466,85 @@ module.exports = {
   getStats,
   stmts
 };
+
+// === ATENCAO PRIMARIA - INDICADORES PREVINE ===
+db.exec(`
+  CREATE TABLE IF NOT EXISTS unidades_saude (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT UNIQUE NOT NULL,
+    tipo TEXT DEFAULT 'UBS',
+    ativo INTEGER DEFAULT 1
+  );
+
+  CREATE TABLE IF NOT EXISTS indicadores_aps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    unidade_id INTEGER NOT NULL,
+    competencia TEXT NOT NULL,
+    indicador TEXT NOT NULL,
+    numerador INTEGER DEFAULT 0,
+    denominador INTEGER DEFAULT 0,
+    meta REAL DEFAULT 0,
+    valor_alcancado REAL DEFAULT 0,
+    observacao TEXT,
+    atualizado_em TEXT DEFAULT (datetime('now')),
+    usuario TEXT,
+    FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id),
+    UNIQUE(unidade_id, competencia, indicador)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_ind_unidade ON indicadores_aps(unidade_id);
+  CREATE INDEX IF NOT EXISTS idx_ind_comp ON indicadores_aps(competencia);
+  CREATE INDEX IF NOT EXISTS idx_ind_indicador ON indicadores_aps(indicador);
+`);
+
+// Indicadores conforme notas tecnicas C2-C7
+const INDICADORES_APS = [
+  { codigo: 'C1', nome: 'Cobertura de equipes de Saude da Familia', meta: 100 },
+  { codigo: 'C2', nome: 'Proporcao de gestantes com pelo menos 6 consultas pre-natal', meta: 60 },
+  { codigo: 'C3', nome: 'Proporcao de gestantes com realizacao de exames', meta: 60 },
+  { codigo: 'C4', nome: 'Proporcao de gestantes com atendimento odontologico', meta: 60 },
+  { codigo: 'C5', nome: 'Cobertura de exame citopatologico (mulheres 25-64 anos)', meta: 40 },
+  { codigo: 'C6', nome: 'Cobertura vacinal de Poliomielite e Pentavalente (menores 1 ano)', meta: 95 },
+  { codigo: 'C7', nome: 'Percentual de pessoas hipertensas com PA aferida a cada semestre', meta: 50 }
+];
+
+const stmtsAPS = {
+  insertUnidade: db.prepare(`INSERT OR IGNORE INTO unidades_saude (nome, tipo) VALUES (?, ?)`),
+  listUnidades: db.prepare(`SELECT * FROM unidades_saude WHERE ativo = 1 ORDER BY nome`),
+  deleteUnidade: db.prepare(`DELETE FROM unidades_saude WHERE id = ?`),
+
+  upsertIndicador: db.prepare(`
+    INSERT INTO indicadores_aps (unidade_id, competencia, indicador, numerador, denominador, meta, valor_alcancado, observacao, usuario)
+    VALUES (@unidade_id, @competencia, @indicador, @numerador, @denominador, @meta, @valor_alcancado, @observacao, @usuario)
+    ON CONFLICT(unidade_id, competencia, indicador) DO UPDATE SET
+      numerador=excluded.numerador, denominador=excluded.denominador,
+      meta=excluded.meta, valor_alcancado=excluded.valor_alcancado,
+      observacao=excluded.observacao, usuario=excluded.usuario, atualizado_em=datetime('now')
+  `),
+
+  getIndicadores: db.prepare(`
+    SELECT i.*, u.nome as unidade_nome FROM indicadores_aps i
+    JOIN unidades_saude u ON u.id = i.unidade_id
+    WHERE i.competencia = ? ORDER BY u.nome, i.indicador
+  `),
+
+  getIndicadoresByUnidade: db.prepare(`
+    SELECT * FROM indicadores_aps WHERE unidade_id = ? AND competencia = ? ORDER BY indicador
+  `),
+
+  getAllCompetencias: db.prepare(`SELECT DISTINCT competencia FROM indicadores_aps ORDER BY competencia DESC`),
+
+  getResumoIndicadores: db.prepare(`
+    SELECT indicador, 
+      AVG(valor_alcancado) as media,
+      MIN(valor_alcancado) as minimo,
+      MAX(valor_alcancado) as maximo,
+      COUNT(*) as unidades
+    FROM indicadores_aps 
+    WHERE competencia = ?
+    GROUP BY indicador
+  `)
+};
+
+module.exports.stmtsAPS = stmtsAPS;
+module.exports.INDICADORES_APS = INDICADORES_APS;
