@@ -291,9 +291,10 @@ function gerarDadosDashboard() {
     GROUP BY agravo
   `);
 
-  // EDLs
+  // EDLs (apenas com coordenadas)
   const edlQuery = db.prepare(`
     SELECT id, categoria, nome, bairro, latitude, longitude FROM edls
+    WHERE latitude IS NOT NULL AND latitude != 0
   `);
 
   // Build dashboard object
