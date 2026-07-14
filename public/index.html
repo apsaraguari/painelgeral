@@ -1030,129 +1030,46 @@ a { text-decoration: none; color: inherit; }
     <div class="detail-section-icon purple"><i class="fas fa-syringe"></i></div>
     <div>
       <div class="detail-section-title">Vacinacao e Imunizacao</div>
-      <div class="detail-section-subtitle">Cobertura Vacinal, Doses Aplicadas e Campanhas</div>
-    </div>
-  </div>
-
-  <div class="cards-row">
-    <div class="card">
-      <div class="card-title"><i class="fas fa-chart-line"></i> Doses Aplicadas por Mes (2024)</div>
-      <div class="chart-container"><canvas id="chartVAC1"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-chart-bar"></i> Cobertura por Vacina (%)</div>
-      <div class="chart-container"><canvas id="chartVAC2"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-tasks"></i> Metas de Cobertura Vacinal</div>
-      <div style="margin-top:8px">
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Poliomielite (VIP/VOP)</span>
-            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>95%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:95%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Triplice Viral (SCR)</span>
-            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>91%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:91%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Pentavalente (DTP+Hib+HB)</span>
-            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>89%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:89%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Influenza (Idosos &gt;60)</span>
-            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>72%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:72%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">HPV (meninas 9-14 anos)</span>
-            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>68%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:68%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">COVID-19 (dose atualizada)</span>
-            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>61%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:61%"></div></div>
-        </div>
-      </div>
+      <div class="detail-section-subtitle">Cobertura Vacinal por Imunobiologico - Dados lancados via Admin</div>
     </div>
   </div>
 
   <div class="cards-row-2">
     <div class="card">
-      <div class="card-title"><i class="fas fa-table"></i> Doses Aplicadas por Vacina - Junho 2025</div>
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Cobertura Vacinal por Imunobiologico</div>
+      <div class="chart-container-lg"><canvas id="chartVAC2"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas de Cobertura Vacinal</div>
+      <div id="vac-metas-container" style="margin-top:8px">
+        <p style="color:var(--text-light);font-size:13px;text-align:center;padding:30px">
+          <i class="fas fa-cloud-upload-alt" style="font-size:20px;display:block;margin-bottom:8px;color:#a0aec0"></i>
+          Lance os dados pelo <a href="/admin" style="color:var(--primary);font-weight:600">Painel Admin</a> > Vacinacao
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Detalhamento por Vacina</div>
       <div class="table-wrapper">
-        <table class="data-table">
+        <table class="data-table" id="vac-table">
           <thead>
-            <tr><th>Vacina</th><th>Doses</th><th>Meta Mensal</th><th>% Meta</th><th>Status</th></tr>
+            <tr><th>Imunobiologico</th><th>Numerador</th><th>Denominador</th><th>Cobertura</th><th>Meta</th><th>Status</th></tr>
           </thead>
-          <tbody>
-            <tr><td>Influenza</td><td>892</td><td>900</td><td>99,1%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
-            <tr><td>COVID-19</td><td>634</td><td>700</td><td>90,6%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
-            <tr><td>Pentavalente</td><td>287</td><td>300</td><td>95,7%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
-            <tr><td>Triplice Viral</td><td>241</td><td>280</td><td>86,1%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
-            <tr><td>HPV</td><td>198</td><td>250</td><td>79,2%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
-            <tr><td>Febre Amarela</td><td>187</td><td>200</td><td>93,5%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
-            <tr><td>Hepatite B</td><td>156</td><td>180</td><td>86,7%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
-            <tr><td>Meningococica C</td><td>134</td><td>150</td><td>89,3%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
-            <tr><td>Pneumococica 10V</td><td>128</td><td>140</td><td>91,4%</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>OK</span></td></tr>
-            <tr><td>Rotavirus</td><td>98</td><td>120</td><td>81,7%</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
+          <tbody id="vac-table-body">
+            <tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:20px">Aguardando dados</td></tr>
           </tbody>
         </table>
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="fas fa-calendar-alt"></i> Campanhas e Eventos</div>
-      <div style="margin-top:8px">
-        <div style="padding:14px;background:#f5eef8;border-radius:10px;border-left:4px solid #8e44ad;margin-bottom:12px">
-          <div style="font-size:13px;font-weight:700;color:#8e44ad">Campanha Influenza 2025</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Periodo: Abril - Junho 2025</div>
-          <div style="margin-top:8px">
-            <div class="progress-bar-bg"><div class="progress-bar-fill purple" style="width:72%"></div></div>
-            <div style="font-size:11px;color:#8e44ad;margin-top:4px">72% da meta atingida (18.432 / 25.600 doses)</div>
-          </div>
-        </div>
-        <div style="padding:14px;background:#f0faf5;border-radius:10px;border-left:4px solid #1a7a4a;margin-bottom:12px">
-          <div style="font-size:13px;font-weight:700;color:#1a7a4a">Multivacinacao Criancas</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Periodo: Agosto 2025 (planejado)</div>
-          <div style="font-size:12px;color:#1a7a4a;margin-top:6px"><i class="fas fa-clock"></i> Em preparacao</div>
-        </div>
-        <div style="padding:14px;background:#ebf5fb;border-radius:10px;border-left:4px solid #2980b9;margin-bottom:12px">
-          <div style="font-size:13px;font-weight:700;color:#2980b9">Vacinacao HPV Escolar</div>
-          <div style="font-size:12px;color:#718096;margin-top:4px">Parceria com Secretaria de Educacao</div>
-          <div style="margin-top:8px">
-            <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:68%"></div></div>
-            <div style="font-size:11px;color:#2980b9;margin-top:4px">68% das escolas visitadas</div>
-          </div>
-        </div>
-        <div class="stats-mini-row" style="margin-top:16px">
-          <div class="stat-mini">
-            <div class="stat-mini-value" style="color:#8e44ad">3.421</div>
-            <div class="stat-mini-label">Doses/Mes</div>
-          </div>
-          <div class="stat-mini">
-            <div class="stat-mini-value" style="color:#27ae60">87%</div>
-            <div class="stat-mini-label">Cobertura</div>
-          </div>
-          <div class="stat-mini">
-            <div class="stat-mini-value" style="color:#2980b9">12</div>
-            <div class="stat-mini-label">Salas Vacina</div>
-          </div>
-        </div>
+      <div class="card-title"><i class="fas fa-info-circle"></i> Resumo</div>
+      <div class="stats-mini-row" id="vac-resumo-stats">
+        <div class="stat-mini"><div class="stat-mini-value" style="color:#8e44ad" id="vac-total-vacinas">--</div><div class="stat-mini-label">Vacinas Lancadas</div></div>
+        <div class="stat-mini"><div class="stat-mini-value" style="color:#27ae60" id="vac-atingiram-meta">--</div><div class="stat-mini-label">Atingiram Meta</div></div>
+        <div class="stat-mini"><div class="stat-mini-value" style="color:#e74c3c" id="vac-abaixo-meta">--</div><div class="stat-mini-label">Abaixo da Meta</div></div>
       </div>
     </div>
   </div>
@@ -2015,40 +1932,72 @@ new Chart(document.getElementById('chartVE2'), {
   }
 });
 
-// ===== VACINACAO CHARTS =====
-new Chart(document.getElementById('chartVAC1'), {
-  type: 'line',
-  data: {
-    labels: months,
-    datasets: [{
-      label: 'Doses Aplicadas',
-      data: [2890, 3120, 3450, 4210, 3980, 3421, 3100, 3560, 3280, 3740, 3190, 4100],
-      borderColor: '#8e44ad', backgroundColor: 'rgba(142,68,173,0.1)',
-      tension: 0.4, fill: true, pointBackgroundColor: '#8e44ad', pointRadius: 4
-    }]
-  },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
-});
+// ===== VACINACAO - CARREGA DA API =====
+let chartVac2Instance = null;
 
-new Chart(document.getElementById('chartVAC2'), {
-  type: 'bar',
-  data: {
-    labels: ['Polio','SCR','Penta','Influenza','HPV','COVID','Hep.B','Pneumo'],
-    datasets: [{
-      label: 'Cobertura %',
-      data: [95, 91, 89, 72, 68, 61, 87, 93],
-      backgroundColor: (ctx) => {
-        const v = ctx.raw;
-        return v >= 90 ? 'rgba(26,122,74,0.8)' : v >= 70 ? 'rgba(230,126,34,0.8)' : 'rgba(231,76,60,0.8)';
-      },
-      borderRadius: 6
-    }]
-  },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f0f4f8' },
-      ticks: { callback: v => v + '%' } }, x: { grid: { display: false } } } }
-});
+async function carregarVacinacao() {
+  try {
+    const res = await fetch('/api/vac/resumo/2026');
+    if (!res.ok) return;
+    const { dados, definicoes } = await res.json();
+    if (!dados || dados.length === 0) return;
+
+    // Build chart
+    const labels = [];
+    const values = [];
+    const colors = [];
+    let atingiram = 0, abaixo = 0;
+
+    dados.forEach(d => {
+      const def = definicoes.find(x => x.codigo === d.imunobiologico);
+      const nome = def ? def.nome.substring(0, 20) : d.imunobiologico;
+      const meta = def ? def.meta : 95;
+      labels.push(nome);
+      values.push(d.cobertura);
+      colors.push(d.cobertura >= meta ? 'rgba(26,122,74,0.8)' : d.cobertura >= meta*0.8 ? 'rgba(230,126,34,0.8)' : 'rgba(231,76,60,0.8)');
+      if (d.cobertura >= meta) atingiram++; else abaixo++;
+    });
+
+    // Update chart
+    if (chartVac2Instance) chartVac2Instance.destroy();
+    chartVac2Instance = new Chart(document.getElementById('chartVAC2'), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Cobertura %', data: values, backgroundColor: colors, borderRadius: 6 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f0f4f8' }, ticks: { callback: v => v+'%' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, font: { size: 10 } } } } }
+    });
+
+    // Update table
+    const tbody = document.getElementById('vac-table-body');
+    tbody.innerHTML = dados.map(d => {
+      const def = definicoes.find(x => x.codigo === d.imunobiologico);
+      const nome = def ? def.nome : d.imunobiologico;
+      const meta = def ? def.meta : 95;
+      const statusClass = d.cobertura >= meta ? 'verde' : d.cobertura >= meta*0.8 ? 'amarelo' : 'vermelho';
+      const statusText = d.cobertura >= meta ? 'OK' : d.cobertura >= meta*0.8 ? 'Atencao' : 'Critico';
+      return `<tr><td>${nome}</td><td>${d.numerador.toLocaleString('pt-BR')}</td><td>${d.denominador.toLocaleString('pt-BR')}</td><td><strong>${d.cobertura.toFixed(1)}%</strong></td><td>${meta}%</td><td><span class="semaforo ${statusClass}"><span class="semaforo-dot"></span>${statusText}</span></td></tr>`;
+    }).join('');
+
+    // Update metas progress
+    const metasContainer = document.getElementById('vac-metas-container');
+    metasContainer.innerHTML = dados.slice(0, 8).map(d => {
+      const def = definicoes.find(x => x.codigo === d.imunobiologico);
+      const nome = def ? def.nome : d.imunobiologico;
+      const meta = def ? def.meta : 95;
+      const statusClass = d.cobertura >= meta ? 'verde' : d.cobertura >= meta*0.8 ? 'amarelo' : 'vermelho';
+      const barColor = d.cobertura >= meta ? 'purple' : d.cobertura >= meta*0.8 ? 'orange' : 'red';
+      return `<div class="progress-item"><div class="progress-header"><span class="progress-label">${nome}</span><span class="progress-values"><span class="semaforo ${statusClass}"><span class="semaforo-dot"></span>${d.cobertura.toFixed(1)}%</span></span></div><div class="progress-bar-bg"><div class="progress-bar-fill ${barColor}" style="width:${Math.min(d.cobertura,100)}%"></div></div></div>`;
+    }).join('');
+
+    // Update stats
+    document.getElementById('vac-total-vacinas').textContent = dados.length;
+    document.getElementById('vac-atingiram-meta').textContent = atingiram;
+    document.getElementById('vac-abaixo-meta').textContent = abaixo;
+  } catch(e) { console.log('Vacinacao API:', e.message); }
+}
+
+// Carrega vacinacao ao iniciar
+carregarVacinacao();
 
 // ===== ODONTOLOGIA CHARTS =====
 new Chart(document.getElementById('chartODO1'), {
