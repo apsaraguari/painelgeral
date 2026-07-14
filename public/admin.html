@@ -561,10 +561,14 @@ async function loadEdlList() {
           <td style="padding:8px"><span class="badge ${edl.categoria==='pe'?'badge-yellow':'badge-green'}">${edl.categoria}</span></td>
           <td style="padding:8px"><input type="number" step="0.000001" value="${edl.latitude||''}" class="form-input" style="padding:6px;background:var(--bg);width:95px;font-size:10px" id="lat-${edl.id}"></td>
           <td style="padding:8px"><input type="number" step="0.000001" value="${edl.longitude||''}" class="form-input" style="padding:6px;background:var(--bg);width:95px;font-size:10px" id="lon-${edl.id}"></td>
-          <td style="padding:8px"><button class="btn-sm accent" style="padding:4px 8px;font-size:10px" onclick="saveEdlCoord(${edl.id})"><i class="fas fa-save"></i></button></td>
+          <td style="padding:8px"><button class="btn-sm accent" style="padding:4px 8px;font-size:10px" onclick="saveEdlCoord(${edl.id})"><i class="fas fa-save"></i></button>
+          <button class="btn-sm" style="padding:4px 8px;font-size:10px;margin-left:4px;border-color:var(--info);color:var(--info)" onclick="geolocateEdl(${edl.id},'${edl.nome.replace(/'/g,"\\'")}')"><i class="fas fa-crosshairs"></i></button></td>
         </tr>`;
       }).join('')}</tbody>
     </table>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <button class="btn-sm" style="border-color:var(--info);color:var(--info)" onclick="geolocateAll()"><i class="fas fa-globe"></i> Localizar Todos Sem Coordenada</button>
+    </div>
     <p style="font-size:10px;color:var(--text-dim);margin-top:8px;text-align:center">${edls.length} pontos exibidos (max 100)</p>`;
   } catch(e) {
     container.innerHTML = '<p style="color:var(--danger);font-size:12px;padding:20px">Erro ao carregar</p>';
@@ -583,6 +587,92 @@ async function saveEdlCoord(id) {
     if (res.ok) showToast('Coordenada salva','success');
     else showToast('Erro ao salvar','error');
   } catch { showToast('Erro','error'); }
+}
+
+// Geocodificar um ponto pelo endereco
+async function geolocateEdl(id, endereco) {
+  showToast('Buscando: ' + endereco.substring(0,40) + '...', 'success');
+  const rua = endereco.split(',')[0].trim();
+  const query = rua + ', Araguari, MG, Brazil';
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+    const res = await fetch(url, { headers: { 'User-Agent': 'PainelAraguari/1.0' } });
+    const data = await res.json();
+
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      document.getElementById('lat-'+id).value = lat.toFixed(6);
+      document.getElementById('lon-'+id).value = lon.toFixed(6);
+      // Salvar automaticamente
+      await fetch('/api/edls/'+id, {
+        method:'PUT', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ latitude: lat, longitude: lon })
+      });
+      showToast('Localizado e salvo!', 'success');
+      loadGeoStatus();
+    } else {
+      showToast('Endereco nao encontrado: ' + rua, 'error');
+    }
+  } catch(e) {
+    showToast('Erro na geocodificacao', 'error');
+  }
+}
+
+// Geocodificar todos sem coordenada (com rate limit)
+async function geolocateAll() {
+  if (!confirm('Localizar automaticamente todos os pontos sem coordenada? Pode demorar alguns minutos.')) return;
+
+  const cat = document.getElementById('edl-filter-cat').value;
+  const params = new URLSearchParams();
+  if (cat) params.set('categoria', cat);
+  const res = await fetch('/api/edls?' + params.toString());
+  const edls = await res.json();
+  const semCoord = edls.filter(e => !e.latitude || e.latitude === 0);
+
+  if (semCoord.length === 0) { showToast('Todos os pontos ja tem coordenada', 'success'); return; }
+
+  showToast(`Localizando ${semCoord.length} pontos...`, 'success');
+  let found = 0, failed = 0;
+  const streetCache = {};
+
+  for (let i = 0; i < semCoord.length; i++) {
+    const edl = semCoord[i];
+    const rua = (edl.nome || '').split(',')[0].trim();
+
+    if (streetCache[rua]) {
+      const base = streetCache[rua];
+      const lat = base.lat + (Math.random()-0.5)*0.001;
+      const lon = base.lon + (Math.random()-0.5)*0.001;
+      await fetch('/api/edls/'+edl.id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({latitude:lat,longitude:lon}) });
+      found++;
+      continue;
+    }
+
+    try {
+      const query = rua + ', Araguari, MG, Brazil';
+      const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`, { headers:{'User-Agent':'PainelAraguari/1.0'} });
+      const geoData = await geoRes.json();
+      if (geoData && geoData.length > 0) {
+        const lat = parseFloat(geoData[0].lat);
+        const lon = parseFloat(geoData[0].lon);
+        streetCache[rua] = { lat, lon };
+        await fetch('/api/edls/'+edl.id, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify({latitude:lat,longitude:lon}) });
+        found++;
+      } else { failed++; }
+    } catch { failed++; }
+
+    // Rate limit 1 req/sec
+    await new Promise(r => setTimeout(r, 1100));
+
+    // Progress feedback cada 10
+    if ((i+1) % 10 === 0) showToast(`Progresso: ${i+1}/${semCoord.length} (${found} ok, ${failed} falhas)`, 'success');
+  }
+
+  showToast(`Concluido: ${found} localizados, ${failed} nao encontrados`, found > 0 ? 'success' : 'error');
+  loadEdlList();
+  loadGeoStatus();
 }
 
 // === INIT ===
