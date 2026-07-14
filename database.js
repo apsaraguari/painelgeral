@@ -548,3 +548,67 @@ const stmtsAPS = {
 
 module.exports.stmtsAPS = stmtsAPS;
 module.exports.INDICADORES_APS = INDICADORES_APS;
+
+// === VACINACAO - COBERTURA VACINAL ===
+db.exec(`
+  CREATE TABLE IF NOT EXISTS cobertura_vacinal (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ano INTEGER NOT NULL,
+    imunobiologico TEXT NOT NULL,
+    numerador INTEGER DEFAULT 0,
+    denominador INTEGER DEFAULT 0,
+    cobertura REAL DEFAULT 0,
+    meta REAL DEFAULT 95,
+    observacao TEXT,
+    atualizado_em TEXT DEFAULT (datetime('now')),
+    usuario TEXT,
+    UNIQUE(ano, imunobiologico)
+  );
+`);
+
+const IMUNOBIOLOGICOS = [
+  { codigo: 'BCG', nome: 'BCG', meta: 90 },
+  { codigo: 'DTP_1REF', nome: 'DTP (1o Reforco)', meta: 95 },
+  { codigo: 'DTP_2REF', nome: 'DTP (2o Reforco)', meta: 95 },
+  { codigo: 'FA', nome: 'Febre Amarela', meta: 95 },
+  { codigo: 'FA_REF', nome: 'Febre Amarela (Reforco)', meta: 95 },
+  { codigo: 'HEP_A', nome: 'Hepatite A Infantil', meta: 95 },
+  { codigo: 'HEP_B', nome: 'Hepatite B (< 1 dia)', meta: 95 },
+  { codigo: 'HEP_B_2D', nome: 'Hepatite B (< 2 dias)', meta: 95 },
+  { codigo: 'HEP_B_30D', nome: 'Hepatite B (< 30 dias)', meta: 95 },
+  { codigo: 'MENINGO_C', nome: 'Meningococica Conjugada', meta: 95 },
+  { codigo: 'MENINGO_C_REF', nome: 'Meningococica Conjugada (1o Reforco)', meta: 95 },
+  { codigo: 'PENTA', nome: 'Pentavalente (3 doses)', meta: 95 },
+  { codigo: 'PNEUMO_10', nome: 'Pneumococica 10V', meta: 95 },
+  { codigo: 'PNEUMO_10_REF', nome: 'Pneumococica 10V (Reforco)', meta: 95 },
+  { codigo: 'POLIO', nome: 'Poliomielite (3 doses)', meta: 95 },
+  { codigo: 'POLIO_REF', nome: 'Poliomielite (Reforco)', meta: 95 },
+  { codigo: 'ROTAVIRUS', nome: 'Rotavirus', meta: 90 },
+  { codigo: 'SCR_D1', nome: 'Triplice Viral (1a dose)', meta: 95 },
+  { codigo: 'SCR_D2', nome: 'Triplice Viral (2a dose)', meta: 95 },
+  { codigo: 'VARICELA', nome: 'Varicela', meta: 95 },
+  { codigo: 'COVID_INFANTIL', nome: 'COVID-19 Infantil', meta: 90 },
+  { codigo: 'HPV_F', nome: 'HPV Feminino (9-14 anos)', meta: 80 },
+  { codigo: 'HPV_M', nome: 'HPV Masculino (11-14 anos)', meta: 80 },
+  { codigo: 'INFLUENZA', nome: 'Influenza (grupos prioritarios)', meta: 90 }
+];
+
+const stmtsVAC = {
+  upsert: db.prepare(`
+    INSERT INTO cobertura_vacinal (ano, imunobiologico, numerador, denominador, cobertura, meta, observacao, usuario)
+    VALUES (@ano, @imunobiologico, @numerador, @denominador, @cobertura, @meta, @observacao, @usuario)
+    ON CONFLICT(ano, imunobiologico) DO UPDATE SET
+      numerador=excluded.numerador, denominador=excluded.denominador,
+      cobertura=excluded.cobertura, meta=excluded.meta,
+      observacao=excluded.observacao, usuario=excluded.usuario, atualizado_em=datetime('now')
+  `),
+  getByAno: db.prepare(`SELECT * FROM cobertura_vacinal WHERE ano = ? ORDER BY imunobiologico`),
+  getAnos: db.prepare(`SELECT DISTINCT ano FROM cobertura_vacinal ORDER BY ano DESC`),
+  getResumo: db.prepare(`
+    SELECT imunobiologico, cobertura, meta, numerador, denominador 
+    FROM cobertura_vacinal WHERE ano = ? ORDER BY imunobiologico
+  `)
+};
+
+module.exports.stmtsVAC = stmtsVAC;
+module.exports.IMUNOBIOLOGICOS = IMUNOBIOLOGICOS;

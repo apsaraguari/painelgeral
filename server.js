@@ -498,6 +498,46 @@ app.get('/api/aps/resumo/:competencia', (req, res) => {
   res.json({ resumo, unidades, indicadores, definicoes: INDICADORES_APS });
 });
 
+// === VACINACAO ROUTES ===
+const { stmtsVAC, IMUNOBIOLOGICOS } = require('./database');
+
+app.get('/api/vac/imunobiologicos', authMiddleware, (req, res) => {
+  res.json(IMUNOBIOLOGICOS);
+});
+
+app.get('/api/vac/dados/:ano', authMiddleware, (req, res) => {
+  const dados = stmtsVAC.getByAno.all(parseInt(req.params.ano));
+  res.json(dados);
+});
+
+app.post('/api/vac/dados', authMiddleware, (req, res) => {
+  const { ano, dados } = req.body;
+  if (!ano || !dados) return res.status(400).json({ error: 'Ano e dados obrigatorios' });
+
+  const saveMany = db.transaction((items) => {
+    for (const item of items) {
+      const cobertura = item.denominador > 0 ? ((item.numerador / item.denominador) * 100) : 0;
+      stmtsVAC.upsert.run({
+        ano: parseInt(ano),
+        imunobiologico: item.imunobiologico,
+        numerador: item.numerador || 0,
+        denominador: item.denominador || 0,
+        cobertura: Math.round(cobertura * 100) / 100,
+        meta: item.meta || 95,
+        observacao: item.observacao || '',
+        usuario: req.user.username
+      });
+    }
+  });
+  saveMany(dados);
+  res.json({ success: true, message: `Cobertura vacinal ${ano} salva com sucesso` });
+});
+
+app.get('/api/vac/resumo/:ano', (req, res) => {
+  const dados = stmtsVAC.getResumo.all(parseInt(req.params.ano));
+  res.json({ ano: req.params.ano, dados, definicoes: IMUNOBIOLOGICOS });
+});
+
 // Serve admin panel
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));

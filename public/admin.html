@@ -340,8 +340,37 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
 
     <!-- PAGE: VACINACAO -->
     <div class="admin-page" id="page-vacinacao">
-      <div class="admin-header"><h2><i class="fas fa-syringe"></i> Vacinacao</h2></div>
-      <div class="admin-card"><h3><i class="fas fa-info-circle"></i> Em desenvolvimento</h3><p style="font-size:13px;color:var(--text-dim)">Upload de dados SI-PNI, cobertura vacinal e campanhas sera implementado em breve.</p></div>
+      <div class="admin-header"><h2><i class="fas fa-syringe"></i> Vacinacao - Cobertura Vacinal</h2></div>
+      <div class="admin-card" style="margin-bottom:20px">
+        <h3><i class="fas fa-edit"></i> Lancar Cobertura Vacinal por Imunobiologico</h3>
+        <div style="display:flex;gap:12px;margin-bottom:16px;align-items:flex-end">
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">Ano</label>
+            <select class="form-input" id="vac-ano" style="padding:10px;background:var(--bg)" onchange="loadVacData()">
+              <option value="2026">2026</option>
+              <option value="2025">2025</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <button class="btn-sm accent" onclick="loadVacData()"><i class="fas fa-sync"></i> Carregar</button>
+        </div>
+        <div style="max-height:500px;overflow-y:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr style="background:var(--bg);position:sticky;top:0">
+              <th style="padding:10px;text-align:left;color:var(--text-dim)">Imunobiologico</th>
+              <th style="padding:10px;width:90px;color:var(--text-dim)">Numerador</th>
+              <th style="padding:10px;width:90px;color:var(--text-dim)">Denominador</th>
+              <th style="padding:10px;width:80px;color:var(--text-dim)">Cobertura</th>
+              <th style="padding:10px;width:60px;color:var(--text-dim)">Meta</th>
+              <th style="padding:10px;width:60px;color:var(--text-dim)">Status</th>
+            </tr></thead>
+            <tbody id="tbody-vac"></tbody>
+          </table>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn-sm accent" onclick="salvarVac()" style="background:var(--accent);color:#000;border-color:var(--accent)"><i class="fas fa-save"></i> Salvar Cobertura Vacinal</button>
+        </div>
+      </div>
     </div>
 
     <!-- PAGE: ODONTOLOGIA -->
@@ -675,6 +704,79 @@ async function geolocateAll() {
   loadGeoStatus();
 }
 
+// === VACINACAO ===
+let imunobiologicos = [];
+
+async function loadImunobiologicos() {
+  try {
+    const res = await fetch('/api/vac/imunobiologicos');
+    if (res.ok) imunobiologicos = await res.json();
+  } catch {}
+}
+
+async function loadVacData() {
+  await loadImunobiologicos();
+  const ano = document.getElementById('vac-ano').value;
+  let existentes = {};
+  try {
+    const res = await fetch('/api/vac/dados/' + ano);
+    if (res.ok) {
+      const data = await res.json();
+      data.forEach(d => { existentes[d.imunobiologico] = d; });
+    }
+  } catch {}
+
+  const tbody = document.getElementById('tbody-vac');
+  tbody.innerHTML = imunobiologicos.map(imuno => {
+    const exist = existentes[imuno.codigo] || {};
+    const num = exist.numerador || '';
+    const den = exist.denominador || '';
+    const cob = exist.cobertura ? exist.cobertura.toFixed(2) : '--';
+    const meta = imuno.meta;
+    const cobNum = parseFloat(cob);
+    const statusIcon = cobNum >= meta ? '🟢' : cobNum >= meta * 0.8 ? '🟡' : cobNum > 0 ? '🔴' : '⚪';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:10px"><strong>${imuno.nome}</strong><br><span style="font-size:10px;color:var(--text-dim)">${imuno.codigo}</span></td>
+      <td style="padding:10px"><input type="number" class="form-input vac-num" data-cod="${imuno.codigo}" value="${num}" style="padding:8px;background:var(--bg);width:80px" oninput="calcVacCob(this)"></td>
+      <td style="padding:10px"><input type="number" class="form-input vac-den" data-cod="${imuno.codigo}" value="${den}" style="padding:8px;background:var(--bg);width:80px" oninput="calcVacCob(this)"></td>
+      <td style="padding:10px;font-weight:700" id="vac-cob-${imuno.codigo}">${cob}%</td>
+      <td style="padding:10px;color:var(--text-dim)">${meta}%</td>
+      <td style="padding:10px;font-size:16px" id="vac-st-${imuno.codigo}">${statusIcon}</td>
+    </tr>`;
+  }).join('');
+}
+
+function calcVacCob(input) {
+  const cod = input.dataset.cod;
+  const num = parseInt(document.querySelector(`.vac-num[data-cod="${cod}"]`).value) || 0;
+  const den = parseInt(document.querySelector(`.vac-den[data-cod="${cod}"]`).value) || 0;
+  const cob = den > 0 ? ((num / den) * 100).toFixed(2) : '--';
+  const meta = imunobiologicos.find(i => i.codigo === cod)?.meta || 95;
+  document.getElementById('vac-cob-' + cod).textContent = cob + '%';
+  const cobNum = parseFloat(cob);
+  const icon = cobNum >= meta ? '🟢' : cobNum >= meta * 0.8 ? '🟡' : cobNum > 0 ? '🔴' : '⚪';
+  document.getElementById('vac-st-' + cod).textContent = icon;
+}
+
+async function salvarVac() {
+  const ano = document.getElementById('vac-ano').value;
+  const dados = imunobiologicos.map(imuno => ({
+    imunobiologico: imuno.codigo,
+    numerador: parseInt(document.querySelector(`.vac-num[data-cod="${imuno.codigo}"]`).value) || 0,
+    denominador: parseInt(document.querySelector(`.vac-den[data-cod="${imuno.codigo}"]`).value) || 0,
+    meta: imuno.meta
+  }));
+  try {
+    const res = await fetch('/api/vac/dados', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ano, dados })
+    });
+    const data = await res.json();
+    if (res.ok) showToast(data.message, 'success');
+    else showToast(data.error, 'error');
+  } catch (e) { showToast('Erro ao salvar', 'error'); }
+}
+
 // === INIT ===
 checkAuth();
 setInterval(loadGeoStatus, 10000);
@@ -805,6 +907,7 @@ function showPage(page) {
   if (event && event.currentTarget) event.currentTarget.classList.add('active');
   if (page === 'atencao') { loadUnidades(); loadIndicadoresDefinicoes(); }
   if (page === 'edls') { loadEdlList(); loadGeoStatus(); }
+  if (page === 'vacinacao') { loadVacData(); }
 }
 </script>
 </body>
