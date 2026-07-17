@@ -761,133 +761,46 @@ a { text-decoration: none; color: inherit; }
     <div class="detail-section-icon green"><i class="fas fa-hospital"></i></div>
     <div>
       <div class="detail-section-title">Atencao Primaria a Saude</div>
-      <div class="detail-section-subtitle">UBS, Estrategia Saude da Familia, NASF e Consultas Medicas</div>
-    </div>
-  </div>
-
-  <div class="cards-row">
-    <div class="card">
-      <div class="card-title"><i class="fas fa-chart-line"></i> Atendimentos por Mes (2024)</div>
-      <div class="chart-container"><canvas id="chartAP1"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-chart-pie"></i> Atendimentos por Tipo</div>
-      <div class="chart-container"><canvas id="chartAP2"></canvas></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><i class="fas fa-tasks"></i> Metas x Realizado</div>
-      <div style="margin-top:8px">
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Consultas Medicas</span>
-            <span class="progress-values">4.210 / 4.500</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:93.6%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Consultas Enfermagem</span>
-            <span class="progress-values">2.890 / 3.000</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:96.3%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Visitas Domiciliares</span>
-            <span class="progress-values">1.134 / 1.500</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:75.6%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Grupos Educativos</span>
-            <span class="progress-values">48 / 60</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill blue" style="width:80%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Cadastros SISAB</span>
-            <span class="progress-values">98.400 / 100.000</span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:98.4%"></div></div>
-        </div>
-      </div>
+      <div class="detail-section-subtitle">Indicadores Previne Brasil (C2-C7) - Dados lancados via Admin por Unidade</div>
     </div>
   </div>
 
   <div class="cards-row-2">
     <div class="card">
-      <div class="card-title"><i class="fas fa-table"></i> Producao por UBS - Junho 2025</div>
+      <div class="card-title"><i class="fas fa-chart-bar"></i> Indicadores por Unidade de Saude</div>
+      <div class="chart-container-lg"><canvas id="chartAP1"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="fas fa-tasks"></i> Metas Previne Brasil</div>
+      <div id="ap-metas-container" style="margin-top:8px">
+        <p style="color:var(--text-light);font-size:13px;text-align:center;padding:30px">
+          <i class="fas fa-cloud-upload-alt" style="font-size:20px;display:block;margin-bottom:8px;color:#a0aec0"></i>
+          Lance os indicadores pelo <a href="/admin" style="color:var(--primary);font-weight:600">Painel Admin</a> > Atencao Primaria
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards-row-2" style="margin-top:20px">
+    <div class="card">
+      <div class="card-title"><i class="fas fa-table"></i> Desempenho por Unidade - Ultimo Quadrimestre</div>
       <div class="table-wrapper">
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Unidade</th>
-              <th>Consultas</th>
-              <th>Visitas</th>
-              <th>Procedimentos</th>
-              <th>Status</th>
-            </tr>
+            <tr><th>Unidade</th><th>C2</th><th>C3</th><th>C4</th><th>C5</th><th>C6</th><th>C7</th><th>Media</th></tr>
           </thead>
-          <tbody>
-            <tr><td>UBS Centro</td><td>892</td><td>124</td><td>1.340</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
-            <tr><td>UBS Bom Jesus</td><td>743</td><td>98</td><td>1.102</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
-            <tr><td>UBS Ipiranga</td><td>621</td><td>87</td><td>934</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
-            <tr><td>UBS Independencia</td><td>534</td><td>76</td><td>801</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
-            <tr><td>UBS Tabajaras</td><td>489</td><td>65</td><td>734</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
-            <tr><td>UBS Novo Mundo</td><td>412</td><td>58</td><td>618</td><td><span class="semaforo amarelo"><span class="semaforo-dot"></span>Atencao</span></td></tr>
-            <tr><td>UBS Setor Sul</td><td>387</td><td>52</td><td>581</td><td><span class="semaforo verde"><span class="semaforo-dot"></span>Normal</span></td></tr>
-            <tr><td>UBS Zona Rural</td><td>298</td><td>143</td><td>447</td><td><span class="semaforo vermelho"><span class="semaforo-dot"></span>Critico</span></td></tr>
+          <tbody id="ap-table-body">
+            <tr><td colspan="8" style="text-align:center;color:var(--text-light);padding:20px">Aguardando dados</td></tr>
           </tbody>
         </table>
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><i class="fas fa-traffic-light"></i> Indicadores PMAQ / PREVINE</div>
-      <div style="margin-top:8px">
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Pre-natal (1 consulta 1 trim.)</span>
-            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>92%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:92%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Hipertensao - consultas em dia</span>
-            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>78%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:78%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Diabetes - HbA1c solicitado</span>
-            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>64%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:64%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Citopatologico (mulheres 25-64)</span>
-            <span class="progress-values"><span class="semaforo amarelo"><span class="semaforo-dot"></span>58%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill orange" style="width:58%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Criancas com vacinas em dia</span>
-            <span class="progress-values"><span class="semaforo verde"><span class="semaforo-dot"></span>89%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill green" style="width:89%"></div></div>
-        </div>
-        <div class="progress-item">
-          <div class="progress-header">
-            <span class="progress-label">Saude do Idoso - avaliacao</span>
-            <span class="progress-values"><span class="semaforo vermelho"><span class="semaforo-dot"></span>41%</span></span>
-          </div>
-          <div class="progress-bar-bg"><div class="progress-bar-fill red" style="width:41%"></div></div>
-        </div>
+      <div class="card-title"><i class="fas fa-info-circle"></i> Resumo Municipal</div>
+      <div class="stats-mini-row" id="ap-resumo-stats">
+        <div class="stat-mini"><div class="stat-mini-value" style="color:var(--primary)" id="ap-total-unidades">--</div><div class="stat-mini-label">Unidades</div></div>
+        <div class="stat-mini"><div class="stat-mini-value" style="color:#27ae60" id="ap-indicadores-ok">--</div><div class="stat-mini-label">Indicadores OK</div></div>
+        <div class="stat-mini"><div class="stat-mini-value" style="color:#e74c3c" id="ap-indicadores-baixo">--</div><div class="stat-mini-label">Abaixo Meta</div></div>
       </div>
     </div>
   </div>
@@ -1378,33 +1291,98 @@ Chart.defaults.plugins.legend.labels.padding = 16;
 const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const months6 = ['Jan','Fev','Mar','Abr','Mai','Jun'];
 
-// ===== ATENCAO PRIMARIA CHARTS =====
-new Chart(document.getElementById('chartAP1'), {
-  type: 'line',
-  data: {
-    labels: months,
-    datasets: [{
-      label: 'Atendimentos',
-      data: [9840, 10120, 11340, 10890, 11560, 12847, 11200, 12100, 11800, 12400, 11900, 13200],
-      borderColor: '#1a7a4a', backgroundColor: 'rgba(26,122,74,0.1)',
-      tension: 0.4, fill: true, pointBackgroundColor: '#1a7a4a', pointRadius: 4
-    }]
-  },
-  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-    scales: { y: { beginAtZero: false, grid: { color: '#f0f4f8' } }, x: { grid: { display: false } } } }
-});
+// ===== ATENCAO PRIMARIA - CARREGA DA API =====
+let chartAP1Instance = null;
 
-new Chart(document.getElementById('chartAP2'), {
-  type: 'doughnut',
-  data: {
-    labels: ['Consulta Medica','Enfermagem','Odontologia','Procedimentos','Visita Domiciliar'],
-    datasets: [{ data: [4210, 2890, 1876, 2637, 1234],
-      backgroundColor: ['#1a7a4a','#2ecc71','#16a085','#3498db','#9b59b6'],
-      borderWidth: 2, borderColor: '#fff' }]
-  },
-  options: { responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { position: 'bottom' } } }
-});
+async function carregarAtencaoPrimaria() {
+  // Tenta carregar ultimo quadrimestre disponivel
+  const competencias = ['2026-Q2','2026-Q1','2025-Q3'];
+  let dados = null;
+
+  for (const comp of competencias) {
+    try {
+      const res = await fetch('/api/aps/resumo/' + comp);
+      if (res.ok) {
+        const d = await res.json();
+        if (d.indicadores && d.indicadores.length > 0) { dados = d; break; }
+      }
+    } catch {}
+  }
+
+  if (!dados || dados.indicadores.length === 0) return;
+
+  const { resumo, unidades, indicadores, definicoes } = dados;
+  const codigos = ['C2','C3','C4','C5','C6','C7'];
+
+  // Build chart - media por indicador
+  if (resumo && resumo.length > 0) {
+    const labels = resumo.map(r => {
+      const def = definicoes.find(d => d.codigo === r.indicador);
+      return def ? def.codigo : r.indicador;
+    });
+    const values = resumo.map(r => r.media ? parseFloat(r.media.toFixed(1)) : 0);
+    const metas = resumo.map(r => {
+      const def = definicoes.find(d => d.codigo === r.indicador);
+      return def ? def.meta : 60;
+    });
+
+    if (chartAP1Instance) chartAP1Instance.destroy();
+    chartAP1Instance = new Chart(document.getElementById('chartAP1'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Media Municipal %', data: values, backgroundColor: values.map((v,i) => v >= metas[i] ? 'rgba(26,122,74,0.8)' : v >= metas[i]*0.7 ? 'rgba(230,126,34,0.8)' : 'rgba(231,76,60,0.8)'), borderRadius: 6 },
+          { label: 'Meta', data: metas, type: 'line', borderColor: '#e74c3c', borderDash: [5,5], pointRadius: 0, borderWidth: 2, fill: false }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
+        scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f0f4f8' }, ticks: { callback: v => v+'%' } }, x: { grid: { display: false } } } }
+    });
+
+    // Update metas progress
+    const metasEl = document.getElementById('ap-metas-container');
+    metasEl.innerHTML = resumo.map(r => {
+      const def = definicoes.find(d => d.codigo === r.indicador);
+      const nome = def ? `${def.codigo} - ${def.nome}` : r.indicador;
+      const meta = def ? def.meta : 60;
+      const val = r.media ? r.media.toFixed(1) : 0;
+      const statusClass = val >= meta ? 'verde' : val >= meta*0.7 ? 'amarelo' : 'vermelho';
+      const barColor = val >= meta ? 'green' : val >= meta*0.7 ? 'orange' : 'red';
+      return `<div class="progress-item"><div class="progress-header"><span class="progress-label">${nome}</span><span class="progress-values"><span class="semaforo ${statusClass}"><span class="semaforo-dot"></span>${val}%</span></span></div><div class="progress-bar-bg"><div class="progress-bar-fill ${barColor}" style="width:${Math.min(val,100)}%"></div></div></div>`;
+    }).join('');
+  }
+
+  // Build table by unidade
+  if (unidades.length > 0 && indicadores.length > 0) {
+    const tbody = document.getElementById('ap-table-body');
+    let okCount = 0, badCount = 0;
+
+    const rows = unidades.map(u => {
+      const uInds = indicadores.filter(i => i.unidade_id === u.id);
+      const cells = codigos.map(cod => {
+        const ind = uInds.find(i => i.indicador === cod);
+        if (!ind) return '<td style="color:var(--text-light)">--</td>';
+        const def = definicoes.find(d => d.codigo === cod);
+        const meta = def ? def.meta : 60;
+        const val = ind.valor_alcancado ? ind.valor_alcancado.toFixed(1) : 0;
+        const color = val >= meta ? '#27ae60' : val >= meta*0.7 ? '#e67e22' : '#e74c3c';
+        if (val >= meta) okCount++; else badCount++;
+        return `<td style="color:${color};font-weight:600">${val}%</td>`;
+      });
+      const vals = uInds.map(i => i.valor_alcancado || 0);
+      const media = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : '--';
+      return `<tr><td style="font-weight:600">${u.nome}</td>${cells.join('')}<td style="font-weight:700">${media}%</td></tr>`;
+    });
+    tbody.innerHTML = rows.join('');
+
+    document.getElementById('ap-total-unidades').textContent = unidades.length;
+    document.getElementById('ap-indicadores-ok').textContent = okCount;
+    document.getElementById('ap-indicadores-baixo').textContent = badCount;
+  }
+}
+
+carregarAtencaoPrimaria();
 
 // ===== VIGILANCIA SANITARIA CHARTS =====
 new Chart(document.getElementById('chartVS1'), {
