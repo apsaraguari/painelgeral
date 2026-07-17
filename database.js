@@ -499,13 +499,22 @@ db.exec(`
 
 // Indicadores conforme notas tecnicas C2-C7
 const INDICADORES_APS = [
-  { codigo: 'C1', nome: 'Cobertura de equipes de Saude da Familia', meta: 100 },
-  { codigo: 'C2', nome: 'Proporcao de gestantes com pelo menos 6 consultas pre-natal', meta: 60 },
-  { codigo: 'C3', nome: 'Proporcao de gestantes com realizacao de exames', meta: 60 },
-  { codigo: 'C4', nome: 'Proporcao de gestantes com atendimento odontologico', meta: 60 },
-  { codigo: 'C5', nome: 'Cobertura de exame citopatologico (mulheres 25-64 anos)', meta: 40 },
-  { codigo: 'C6', nome: 'Cobertura vacinal de Poliomielite e Pentavalente (menores 1 ano)', meta: 95 },
-  { codigo: 'C7', nome: 'Percentual de pessoas hipertensas com PA aferida a cada semestre', meta: 50 }
+  // Gestante - Pre-natal e Puerperio
+  { codigo: 'CAPT_PREC', nome: 'Captacao precoce', meta: 80, grupo: 'Gestante' },
+  { codigo: 'CONS_7PN', nome: '>=7 consultas Pre-Natal', meta: 60, grupo: 'Gestante' },
+  { codigo: 'AFER_7PA', nome: '>=7 afericoes de PA', meta: 60, grupo: 'Gestante' },
+  { codigo: 'PESO_7ALT', nome: '>=7 peso/altura', meta: 60, grupo: 'Gestante' },
+  { codigo: 'VIS_3ACS', nome: '>=3 visitas ACS PN', meta: 60, grupo: 'Gestante' },
+  { codigo: 'VAC_DTPA', nome: 'Vacina dTpa', meta: 80, grupo: 'Gestante' },
+  { codigo: 'EXAM_1TRI', nome: 'Exames 1o trimestre', meta: 60, grupo: 'Gestante' },
+  { codigo: 'EXAM_3TRI', nome: 'Exames 3o trimestre', meta: 60, grupo: 'Gestante' },
+  { codigo: 'CONS_PUERP', nome: 'Consulta puerperio', meta: 60, grupo: 'Gestante' },
+  { codigo: 'VIS_ACS_PUERP', nome: 'Visita ACS puerperio', meta: 60, grupo: 'Gestante' },
+  { codigo: 'ATEND_ODONTO', nome: 'Atendimento odontologico', meta: 60, grupo: 'Gestante' },
+  // Indicadores gerais Previne
+  { codigo: 'C5', nome: 'Cobertura citopatologico (mulheres 25-64)', meta: 40, grupo: 'Mulher' },
+  { codigo: 'C6', nome: 'Cobertura vacinal Polio+Penta (<1 ano)', meta: 95, grupo: 'Crianca' },
+  { codigo: 'C7', nome: 'Hipertensos com PA aferida/semestre', meta: 50, grupo: 'Hipertensao' }
 ];
 
 const stmtsAPS = {
