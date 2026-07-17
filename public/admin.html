@@ -293,6 +293,20 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
       <!-- Formulario Indicadores -->
       <div class="admin-card">
         <h3><i class="fas fa-edit"></i> Lancar Indicadores (Notas Tecnicas C2-C7)</h3>
+
+        <!-- Descricao dos indicadores -->
+        <div style="margin-bottom:16px;padding:14px;background:var(--bg);border-radius:10px;border:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px">Indicadores por Nota Tecnica</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:var(--text-dim)">
+            <div><strong style="color:var(--info)">C2</strong> - Cuidado no desenvolvimento infantil</div>
+            <div><strong style="color:var(--info)">C3</strong> - Cuidado na gestacao e puerperio</div>
+            <div><strong style="color:var(--info)">C4</strong> - Cuidado da pessoa com diabetes</div>
+            <div><strong style="color:var(--info)">C5</strong> - Cuidado da pessoa com hipertensao</div>
+            <div><strong style="color:var(--info)">C6</strong> - Cuidado da pessoa idosa</div>
+            <div><strong style="color:var(--info)">C7</strong> - Cuidado da mulher (prevencao cancer)</div>
+          </div>
+        </div>
+
         <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap">
           <div>
             <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">Competencia (Quadrimestre)</label>
@@ -307,6 +321,16 @@ body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--tex
             <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">Unidade</label>
             <select class="form-input" id="aps-unidade" style="padding:10px;background:var(--bg)" onchange="loadIndicadoresUnidade()">
               <option value="">Selecione a unidade</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:4px">Filtrar Indicador</label>
+            <select class="form-input" id="aps-filtro-grupo" style="padding:10px;background:var(--bg)" onchange="loadIndicadoresUnidade()">
+              <option value="todos">Todos</option>
+              <option value="Gestante">C3 - Gestante (Pre-natal/Puerperio)</option>
+              <option value="Mulher">C7 - Mulher (Citopatologico)</option>
+              <option value="Crianca">C2 - Crianca (Vacinal)</option>
+              <option value="Hipertensao">C5 - Hipertensao</option>
             </select>
           </div>
           <div style="align-self:flex-end"><button class="btn-sm accent" onclick="loadIndicadoresUnidade()"><i class="fas fa-sync"></i> Carregar</button></div>
@@ -832,9 +856,16 @@ async function loadIndicadoresDefinicoes() {
 async function loadIndicadoresUnidade() {
   const unidadeId = document.getElementById('aps-unidade').value;
   const competencia = document.getElementById('aps-competencia').value;
+  const filtroGrupo = document.getElementById('aps-filtro-grupo').value;
   if (!unidadeId) { document.getElementById('form-indicadores').style.display='none'; return; }
 
   document.getElementById('form-indicadores').style.display='block';
+
+  // Filter indicators by group
+  let indicadoresFiltrados = indicadoresAPS;
+  if (filtroGrupo !== 'todos') {
+    indicadoresFiltrados = indicadoresAPS.filter(i => i.grupo === filtroGrupo);
+  }
 
   // Load existing data for this unit/period
   let existentes = {};
@@ -848,14 +879,15 @@ async function loadIndicadoresUnidade() {
 
   // Build form
   const tbody = document.getElementById('tbody-indicadores');
-  tbody.innerHTML = indicadoresAPS.map(ind => {
+  tbody.innerHTML = indicadoresFiltrados.map(ind => {
     const exist = existentes[ind.codigo] || {};
     const num = exist.numerador || '';
     const den = exist.denominador || '';
     const pct = exist.valor_alcancado ? exist.valor_alcancado.toFixed(1) : '--';
     const cor = exist.valor_alcancado >= ind.meta ? 'var(--accent)' : exist.valor_alcancado > 0 ? 'var(--warning)' : 'var(--text-dim)';
+    const grupoBadge = `<span style="font-size:9px;padding:2px 6px;background:rgba(59,130,246,0.15);color:var(--info);border-radius:4px">${ind.grupo}</span>`;
     return `<tr style="border-bottom:1px solid var(--border)">
-      <td style="padding:10px"><strong style="color:var(--info)">${ind.codigo}</strong> ${ind.nome}</td>
+      <td style="padding:10px"><strong style="color:var(--info)">${ind.codigo}</strong> ${ind.nome} ${grupoBadge}</td>
       <td style="padding:10px"><input type="number" class="form-input ind-num" data-cod="${ind.codigo}" value="${num}" style="padding:8px;background:var(--bg);width:80px" oninput="calcPct(this)"></td>
       <td style="padding:10px"><input type="number" class="form-input ind-den" data-cod="${ind.codigo}" value="${den}" style="padding:8px;background:var(--bg);width:80px" oninput="calcPct(this)"></td>
       <td style="padding:10px;font-weight:700;color:${cor}" id="pct-${ind.codigo}">${pct}%</td>
@@ -880,12 +912,19 @@ async function salvarIndicadores() {
   const competencia = document.getElementById('aps-competencia').value;
   if (!unidadeId) return showToast('Selecione uma unidade','error');
 
-  const dados = indicadoresAPS.map(ind => ({
-    indicador: ind.codigo,
-    numerador: parseInt(document.querySelector(`.ind-num[data-cod="${ind.codigo}"]`).value) || 0,
-    denominador: parseInt(document.querySelector(`.ind-den[data-cod="${ind.codigo}"]`).value) || 0,
-    meta: ind.meta
-  }));
+  // Pega apenas os indicadores que estao visiveis (com input no DOM)
+  const inputs = document.querySelectorAll('.ind-num');
+  const dados = [];
+  inputs.forEach(input => {
+    const cod = input.dataset.cod;
+    const ind = indicadoresAPS.find(i => i.codigo === cod);
+    dados.push({
+      indicador: cod,
+      numerador: parseInt(input.value) || 0,
+      denominador: parseInt(document.querySelector(`.ind-den[data-cod="${cod}"]`).value) || 0,
+      meta: ind ? ind.meta : 60
+    });
+  });
 
   try {
     const res = await fetch('/api/aps/indicadores', {
