@@ -784,6 +784,16 @@ a { text-decoration: none; color: inherit; }
   <div class="cards-row-2" style="margin-top:20px">
     <div class="card">
       <div class="card-title"><i class="fas fa-table"></i> Desempenho por Unidade - Ultimo Quadrimestre</div>
+      <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:11px;color:var(--text-light);font-weight:600">Filtrar indicador:</span>
+        <select class="ve-filter-select" id="ap-filtro-indicador" onchange="filtrarTabelaAP()" style="padding:6px 10px;font-size:12px">
+          <option value="todos">Todos os Indicadores</option>
+          <option value="gestante">Gestante (Pre-natal/Puerperio)</option>
+          <option value="C5">C5 - Citopatologico</option>
+          <option value="C6">C6 - Cobertura Vacinal</option>
+          <option value="C7">C7 - Hipertensao</option>
+        </select>
+      </div>
       <div class="table-wrapper" style="max-height:400px;overflow:auto">
         <table class="data-table" id="ap-table">
           <thead id="ap-table-head">
@@ -1355,39 +1365,60 @@ async function carregarAtencaoPrimaria() {
 
   // Build table by unidade
   if (unidades.length > 0 && indicadores.length > 0) {
-    const thead = document.getElementById('ap-table-head');
-    const tbody = document.getElementById('ap-table-body');
-    const allCodigos = definicoes.map(d => d.codigo);
-    let okCount = 0, badCount = 0;
-
-    // Build header dynamically from definicoes
-    thead.innerHTML = '<tr><th style="font-size:10px">Unidade</th>' + 
-      definicoes.map(d => `<th title="${d.nome}" style="font-size:9px;padding:4px 3px;text-align:center;max-width:45px;word-wrap:break-word">${d.codigo.replace('_',' ')}</th>`).join('') + 
-      '<th style="font-size:10px">Media</th></tr>';
-
-    const rows = unidades.map(u => {
-      const uInds = indicadores.filter(i => i.unidade_id === u.id);
-      const cells = allCodigos.map(cod => {
-        const ind = uInds.find(i => i.indicador === cod);
-        if (!ind || !ind.valor_alcancado) return '<td style="color:#ccc;text-align:center;font-size:10px">--</td>';
-        const def = definicoes.find(d => d.codigo === cod);
-        const meta = def ? def.meta : 60;
-        const val = ind.valor_alcancado.toFixed(0);
-        const color = parseFloat(val) >= meta ? '#27ae60' : parseFloat(val) >= meta*0.7 ? '#e67e22' : '#e74c3c';
-        if (parseFloat(val) >= meta) okCount++; else badCount++;
-        return `<td style="color:${color};font-weight:600;text-align:center;font-size:10px">${val}%</td>`;
-      });
-      const vals = uInds.filter(i => i.valor_alcancado > 0).map(i => i.valor_alcancado);
-      const media = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(0) : '--';
-      const mediaColor = parseFloat(media) >= 60 ? '#27ae60' : parseFloat(media) >= 40 ? '#e67e22' : '#e74c3c';
-      return `<tr><td style="font-weight:600;font-size:11px;white-space:nowrap">${u.nome}</td>${cells.join('')}<td style="font-weight:700;color:${mediaColor}">${media}%</td></tr>`;
-    });
-    tbody.innerHTML = rows.join('');
-
-    document.getElementById('ap-total-unidades').textContent = unidades.length;
-    document.getElementById('ap-indicadores-ok').textContent = okCount;
-    document.getElementById('ap-indicadores-baixo').textContent = badCount;
+    // Salva dados globais para filtro
+    window._apData = { unidades, indicadores, definicoes };
+    filtrarTabelaAP();
   }
+}
+
+function filtrarTabelaAP() {
+  const data = window._apData;
+  if (!data) return;
+  const { unidades, indicadores, definicoes } = data;
+  const filtro = document.getElementById('ap-filtro-indicador').value;
+
+  // Filtra definicoes conforme seleção
+  let filteredDefs;
+  if (filtro === 'todos') {
+    filteredDefs = definicoes;
+  } else if (filtro === 'gestante') {
+    filteredDefs = definicoes.filter(d => d.grupo === 'Gestante');
+  } else {
+    filteredDefs = definicoes.filter(d => d.codigo === filtro);
+  }
+
+  const thead = document.getElementById('ap-table-head');
+  const tbody = document.getElementById('ap-table-body');
+  const allCodigos = filteredDefs.map(d => d.codigo);
+  let okCount = 0, badCount = 0;
+
+  // Build header
+  thead.innerHTML = '<tr><th style="font-size:10px;position:sticky;left:0;background:#f7fafc;z-index:1">Unidade</th>' + 
+    filteredDefs.map(d => `<th title="${d.nome}" style="font-size:9px;padding:4px 3px;text-align:center;max-width:55px">${d.codigo.replace(/_/g,' ')}</th>`).join('') + 
+    '<th style="font-size:10px">Media</th></tr>';
+
+  const rows = unidades.map(u => {
+    const uInds = indicadores.filter(i => i.unidade_id === u.id);
+    const cells = allCodigos.map(cod => {
+      const ind = uInds.find(i => i.indicador === cod);
+      if (!ind || !ind.valor_alcancado) return '<td style="color:#ccc;text-align:center;font-size:10px">--</td>';
+      const def = filteredDefs.find(d => d.codigo === cod);
+      const meta = def ? def.meta : 60;
+      const val = ind.valor_alcancado.toFixed(0);
+      const color = parseFloat(val) >= meta ? '#27ae60' : parseFloat(val) >= meta*0.7 ? '#e67e22' : '#e74c3c';
+      if (parseFloat(val) >= meta) okCount++; else badCount++;
+      return `<td style="color:${color};font-weight:600;text-align:center;font-size:10px">${val}%</td>`;
+    });
+    const vals = uInds.filter(i => allCodigos.includes(i.indicador) && i.valor_alcancado > 0).map(i => i.valor_alcancado);
+    const media = vals.length > 0 ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(0) : '--';
+    const mediaColor = parseFloat(media) >= 60 ? '#27ae60' : parseFloat(media) >= 40 ? '#e67e22' : '#e74c3c';
+    return `<tr><td style="font-weight:600;font-size:11px;white-space:nowrap;position:sticky;left:0;background:#fff">${u.nome}</td>${cells.join('')}<td style="font-weight:700;color:${mediaColor}">${media}%</td></tr>`;
+  });
+  tbody.innerHTML = rows.join('');
+
+  document.getElementById('ap-total-unidades').textContent = unidades.length;
+  document.getElementById('ap-indicadores-ok').textContent = okCount;
+  document.getElementById('ap-indicadores-baixo').textContent = badCount;
 }
 carregarAtencaoPrimaria();
 
